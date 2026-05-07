@@ -1,0 +1,354 @@
+<div class="transferencia-container">
+  <h2>Crear Documento de Transferencia</h2>
+
+  <!-- Sistema de pasos -->
+  <nz-steps [nzCurrent]="currentStep">
+    <nz-step nzTitle="Datos Generales"></nz-step>
+    <nz-step nzTitle="Firmas y Personas Encargadas"></nz-step>
+    <nz-step nzTitle="Bienes Disponibles"></nz-step>
+    <nz-step nzTitle="Bienes Seleccionados"></nz-step>
+  </nz-steps>
+
+  <!-- Paso 1: Datos Generales -->
+  <div *ngIf="currentStep === 0">
+    <div class="row">
+      <!-- Sección de Datos Generales -->
+      <div class="col-6">
+        <h3>Datos Generales</h3>
+        <nz-form-item>
+          <nz-form-label [nzSpan]="24" nzFor="tipoModalidad">Tipo de Modalidad</nz-form-label>
+          <nz-form-control [nzSpan]="24">
+            <nz-select [(ngModel)]="selectedTipoModalidad" 
+                       (ngModelChange)="onTipoModalidadChange()"
+                       nzPlaceHolder="Selecciona modalidad" 
+                       required>
+              <nz-option *ngFor="let tipo of tipoModalidades" 
+                         [nzValue]="tipo.id" 
+                         [nzLabel]="tipo.nombre"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        
+
+        <nz-form-item>
+          <nz-form-label [nzSpan]="24" nzFor="nombre">Nombre</nz-form-label>
+          <nz-form-control [nzSpan]="24">
+            <input nz-input [(ngModel)]="Nombre"  [disabled]="esTransferenciaInterna()"placeholder="Ingresa nombre" required />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzSpan]="24" nzFor="motivo">Motivo</nz-form-label>
+          <nz-form-control [nzSpan]="24">
+            <input nz-input [(ngModel)]="selectedMotivo" [disabled]="esTransferenciaInterna()" placeholder="Ingresa motivo" required />
+          </nz-form-control>
+        </nz-form-item>
+        
+        <nz-form-item>
+          <nz-form-label [nzSpan]="24" nzFor="Documento">Motivo</nz-form-label>
+          <nz-form-control [nzSpan]="24">
+            <input nz-input [(ngModel)]="documentoAutorizado" [disabled]="esTransferenciaInterna()" placeholder="Ingresa Documento" required />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzSpan]="24" nzFor="fechaMovimiento">Fecha</nz-form-label>
+          <nz-form-control [nzSpan]="24">
+            <nz-date-picker
+              [(ngModel)]="fechaMovimiento"
+              nzFormat="dd/MM/yyyy"
+              nzPlaceHolder="Selecciona fecha">
+            </nz-date-picker>
+          </nz-form-control>
+        </nz-form-item>
+
+        
+      </div>
+
+      <!-- Sección de Ubicaciones y Destinos -->
+      <div class="col-6">
+        <h3>Ubicaciones y Destinos</h3>
+        <nz-form-item>
+          <nz-form-label [nzSpan]="24" nzFor="ubicacionProcedente">Oficina Procedente</nz-form-label>
+          <nz-form-control [nzSpan]="24">
+            <nz-select [(ngModel)]="selectedUbicacionProcedente" [disabled]="esTransferenciaInterna()" nzPlaceHolder="Selecciona oficina procedente" required>
+              <nz-option *ngFor="let ubicacion of ubicaciones" [nzValue]="ubicacion.ID_UBICACION" [nzLabel]="ubicacion.NOMBRE"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzSpan]="24" nzFor="ubicacionDestino">Oficina Destino</nz-form-label>
+          <nz-form-control [nzSpan]="24">
+            <nz-select [(ngModel)]="selectedUbicacionDestino" (ngModelChange)="onUbicacionDestinoChange()" nzPlaceHolder="Selecciona oficina destino" required>
+              <nz-option *ngFor="let ubicacion of ubicaciones" [nzValue]="ubicacion.ID_UBICACION" [nzLabel]="ubicacion.NOMBRE"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzSpan]="24" nzFor="ambienteDestino">Ambiente Destino</nz-form-label>
+          <nz-form-control [nzSpan]="24">
+            <nz-select [(ngModel)]="selectedAmbienteDestino" nzPlaceHolder="Selecciona ambiente destino" required>
+              <nz-option *ngFor="let ambiente of ambientes" [nzValue]="ambiente.ID_AMBIENTE" [nzLabel]="ambiente.NOMBRE_AMBIENTE"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+    </div>
+
+    <!-- Botones -->
+    <div class="acciones mt-4">
+      <button nz-button nzType="primary" routerLink="/reportes" class="btn btn-danger">Cancelar</button>
+      <button nz-button nzType="primary" (click)="onStepChange()" class="btn btn-danger"> Siguiente</button>
+    </div>
+  </div>
+
+<!-- Paso 2: Firmas y Personas Encargadas -->
+<div *ngIf="currentStep === 1">
+  <div class="row firmas-grid">
+    <h3>Firmas y Personas Encargadas</h3>
+
+    <!-- Persona que recibe -->
+    <div class="col-4 firma-card">
+      <nz-form-item>
+        <nz-form-label nzFor="personaRecibe">Recibe Conforme (Nombre)</nz-form-label>
+        <nz-form-control>
+          <input nz-input [(ngModel)]="personaRecibe" placeholder="Nombre de quien recibe" required />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="cargoRecibe">Cargo</nz-form-label>
+        <nz-form-control>
+          <input nz-input [(ngModel)]="cargoRecibe" placeholder="Cargo de quien recibe" required />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item class="usuario-registrado">
+        <nz-form-label nzFor="usuarioRecibe">Usuario registrado (opcional)</nz-form-label>
+        <nz-form-control>
+          <nz-select
+            [(ngModel)]="selectedUsuarioRecibe"
+            (ngModelChange)="onUsuarioRegistradoChange('recibe', $event)"
+            nzAllowClear
+            nzShowSearch
+            nzPlaceHolder="Seleccionar si ya existe">
+            <nz-option
+              *ngFor="let usuario of usuariosRegistrados"
+              [nzValue]="usuario.id"
+              [nzLabel]="(usuario.NOMBRES || '') + ' ' + (usuario.APELLIDOS || '')">
+            </nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+
+    <!-- Persona que entrega -->
+    <div class="col-4 firma-card">
+      <nz-form-item>
+        <nz-form-label nzFor="personaEntrega">Entrega Conforme (Nombre)</nz-form-label>
+        <nz-form-control>
+          <input nz-input [(ngModel)]="personaEntrega" placeholder="Nombre de quien entrega" required />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="cargoEntrega">Cargo</nz-form-label>
+        <nz-form-control>
+          <input nz-input [(ngModel)]="cargoEntrega" placeholder="Cargo de quien entrega" required />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item class="usuario-registrado">
+        <nz-form-label nzFor="usuarioEntrega">Usuario registrado (opcional)</nz-form-label>
+        <nz-form-control>
+          <nz-select
+            [(ngModel)]="selectedUsuarioEntrega"
+            (ngModelChange)="onUsuarioRegistradoChange('entrega', $event)"
+            nzAllowClear
+            nzShowSearch
+            nzPlaceHolder="Seleccionar si ya existe">
+            <nz-option
+              *ngFor="let usuario of usuariosRegistrados"
+              [nzValue]="usuario.id"
+              [nzLabel]="(usuario.NOMBRES || '') + ' ' + (usuario.APELLIDOS || '')">
+            </nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+
+    <!-- Persona de Control Patrimonial -->
+    <div class="col-4 firma-card">
+      <nz-form-item>
+        <nz-form-label nzFor="personaControl">V° B° Of. Control Patrimonial (Nombre)</nz-form-label>
+        <nz-form-control>
+          <input nz-input [(ngModel)]="personaControl" placeholder="Nombre de Control Patrimonial" required />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="cargoControl">Cargo</nz-form-label>
+        <nz-form-control>
+          <input nz-input [(ngModel)]="cargoControl" placeholder="Cargo de Control Patrimonial" required />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item class="usuario-registrado">
+        <nz-form-label nzFor="usuarioControl">Usuario registrado (opcional)</nz-form-label>
+        <nz-form-control>
+          <nz-select
+            [(ngModel)]="selectedUsuarioControl"
+            (ngModelChange)="onUsuarioRegistradoChange('control', $event)"
+            nzAllowClear
+            nzShowSearch
+            nzPlaceHolder="Seleccionar si ya existe">
+            <nz-option
+              *ngFor="let usuario of usuariosRegistrados"
+              [nzValue]="usuario.id"
+              [nzLabel]="(usuario.NOMBRES || '') + ' ' + (usuario.APELLIDOS || '')">
+            </nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+    </div>
+  </div>
+  <!-- Botones -->
+  <div class="acciones mt-4">
+    <button nz-button nzType="default" (click)="currentStep = 0" class="btn btn-danger">Anterior</button>
+    <button nz-button nzType="primary" (click)="currentStep = 2"  class="btn btn-danger">Siguiente</button>
+  </div>
+</div>
+
+
+  <!-- Paso 3: Bienes Disponibles -->
+  <div *ngIf="currentStep === 2">
+    <div class="col-12">
+      <h3>Bienes Disponibles</h3>
+
+      <div class="filters-container" style="margin-bottom: 20px;">
+      <!-- Campo de búsqueda para nombre o descripción del bien -->
+      <nz-input-group [nzSuffix]="suffixIconSearch">
+        <input type="text" nz-input placeholder="Buscar por código o descripción" 
+               [(ngModel)]="searchTerm" (ngModelChange)="onSearchTermChange()" />
+      </nz-input-group>
+      <ng-template #suffixIconSearch>
+        <i nz-icon nzType="search"></i>
+      </ng-template>
+
+      <!-- Select para categoría -->
+      <nz-select *ngIf="!manualCategoria" 
+                 [nzPlaceHolder]="'Seleccione Categoría'" 
+                 style="width: 200px; margin-left: 10px;"
+                 [(ngModel)]="selectedCategoria" 
+                 (ngModelChange)="onCategoriaChange($event)">
+        <nz-option [nzValue]="null" nzLabel="Todas las Categorías"></nz-option>
+        <nz-option *ngFor="let categoria of categorias" 
+                   [nzValue]="categoria.id" 
+                   [nzLabel]="categoria.NOMBRE_CATEGORIA">
+        </nz-option>
+      </nz-select>
+
+      <!-- Campo de búsqueda manual para la categoría -->
+      <input *ngIf="manualCategoria" nz-input type="text" 
+             placeholder="Escriba la categoría"
+             [(ngModel)]="categoriaManual" 
+             (ngModelChange)="buscarBienes()"
+             style="width: 200px; margin-left: 10px;" />
+
+      <!-- Campos de búsqueda para Ubicación y Ambiente -->
+      <nz-input-group [nzSuffix]="suffixIconLocation" style="width: 200px; margin-left: 10px;">
+        <input type="text" nz-input placeholder="Última Ubicación" 
+               [(ngModel)]="ubicacionTerm" (ngModelChange)="onUbicacionChange()" />
+      </nz-input-group>
+      <ng-template #suffixIconLocation>
+        <i nz-icon nzType="environment"></i>
+      </ng-template>
+
+      <nz-input-group [nzSuffix]="suffixIconEnvironment" style="width: 200px; margin-left: 10px;">
+        <input type="text" nz-input placeholder="Último Ambiente" 
+               [(ngModel)]="ambienteTerm" (ngModelChange)="onAmbienteChange()" />
+      </nz-input-group>
+      <ng-template #suffixIconEnvironment>
+        <i nz-icon nzType="apartment"></i>
+      </ng-template>
+
+      <!-- Botón para alternar entre select e input manual de categoría -->
+      <button nz-button (click)="toggleManualCategoria()" style="margin-left: 10px;">
+        {{ manualCategoria ? 'Usar Select' : 'Búsqueda Manual' }}
+      </button>
+    </div>
+
+      <div class="scrollable-table">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th><input type="checkbox" (change)="toggleSelectAll($event)" /></th>
+              <th>ID</th>
+              <th>Categoria</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let bien of bienesFiltrados">
+              <td><input type="checkbox" [(ngModel)]="selectedBienIds[bien.id]" (ngModelChange)="actualizarBienesSeleccionados()" /></td>
+              <td>{{ bien.codigo }}</td>
+              <td>{{ bien.categoria.NOMBRE_CATEGORIA }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Botones -->
+    <div class="acciones">
+      <button nz-button nzType="default" (click)="currentStep = 1" class="btn btn-danger">Anterior</button>
+      <button nz-button nzType="primary" (click)="avanzarAlPaso4()" class="btn btn-danger">Siguiente</button>
+    </div>
+  </div>
+
+  <!-- Paso 4: Bienes Seleccionados -->
+  <div *ngIf="currentStep === 3">
+    <div class="col-12">
+      <h3>Bienes Seleccionados</h3>
+      <div class="scrollable-table">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Categoria</th>
+              <th>Estado</th>
+              <th>Usuario</th>
+              <th>Ambiente Actual</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let bien of bienesSeleccionados">
+              <td>{{ bien.codigo }}</td>
+              <td>{{ bien.categoria.NOMBRE_CATEGORIA }}</td>
+              <td>
+                <nz-select [(ngModel)]="selectedEstado[bien.id]" 
+                           nzPlaceHolder="Selecciona estado" 
+                           [nzDisabled]="!esEstadoEditable()"
+                           required>
+                  <nz-option nzValue="Nuevo" nzLabel="Nuevo"></nz-option>
+                  <nz-option nzValue="Bueno" nzLabel="Bueno"></nz-option>
+                  <nz-option nzValue="Regular" nzLabel="Regular"></nz-option>
+                  <nz-option nzValue="Malo" nzLabel="Malo"></nz-option>
+                  <nz-option nzValue="RAEE/Chatarra" nzLabel="RAEE/Chatarra"></nz-option>
+                </nz-select>
+              </td>
+              <td>{{ bien.ID_USUARIO }}</td>
+              <td>
+                {{ ($any(bien.movimientos[0])?.ambiente?.ubicacion?.NOMBRE || '') +
+                  ' - ' +
+                  ($any(bien.movimientos[0])?.ambiente?.NOMBRE_AMBIENTE || 'No Registrado') }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Botones -->
+    <div class="acciones">
+      <button nz-button nzType="default" (click)="currentStep = 2" class="btn btn-danger">Anterior</button>
+      <button nz-button nzType="default" (click)="guardarTransferencia()" class="btn btn-danger">Guardar Transferencia</button>
+    </div>
+  </div>
+</div>

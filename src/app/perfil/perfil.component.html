@@ -1,0 +1,110 @@
+<div class="container">
+  <nz-card nzTitle="Perfil de Usuario" [nzLoading]="loading">
+    <form [formGroup]="perfilForm" nz-form>
+      <!-- Fila de columnas -->
+      <nz-row [nzGutter]="16">
+        <!-- Columna 1 -->
+        <nz-col [nzSpan]="12">
+          <!-- Nombres -->
+          <nz-form-item>
+            <nz-form-label [nzSpan]="8">Nombres</nz-form-label>
+            <nz-form-control [nzSpan]="16">
+              <input nz-input formControlName="nombres" placeholder="Nombres" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <!-- Usuario -->
+          <nz-form-item>
+            <nz-form-label [nzSpan]="8">Usuario</nz-form-label>
+            <nz-form-control [nzSpan]="16">
+              <input nz-input formControlName="usuario" placeholder="Usuario" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <!-- Estado -->
+          <nz-form-item>
+            <nz-form-label [nzSpan]="8">Estado</nz-form-label>
+            <nz-form-control [nzSpan]="16">
+              <nz-select formControlName="estado" placeholder="Selecciona el estado">
+                <nz-option nzValue="Activo" nzLabel="Activo"></nz-option>
+                <nz-option nzValue="inactivo" nzLabel="Inactivo"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </nz-col>
+
+        <!-- Columna 2 -->
+        <nz-col [nzSpan]="12">
+          <!-- Apellidos -->
+          <nz-form-item>
+            <nz-form-label [nzSpan]="8">Apellidos</nz-form-label>
+            <nz-form-control [nzSpan]="16">
+              <input nz-input formControlName="apellidos" placeholder="Apellidos" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <!-- DNI -->
+          <nz-form-item>
+            <nz-form-label [nzSpan]="8">DNI</nz-form-label>
+            <nz-form-control [nzSpan]="16">
+              <input nz-input formControlName="dni" placeholder="DNI" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <!-- Cargo -->
+          <nz-form-item>
+            <nz-form-label [nzSpan]="8">Cargo</nz-form-label>
+            <nz-form-control [nzSpan]="16">
+              <input nz-input formControlName="cargo" placeholder="Cargo" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <!-- Rol -->
+          <nz-form-item>
+            <nz-form-label [nzSpan]="8">Rol</nz-form-label>
+            <nz-form-control [nzSpan]="16">
+              <input nz-input [value]="rolLabel" disabled />
+            </nz-form-control>
+          </nz-form-item>
+        </nz-col>
+      </nz-row>
+    </form>
+  </nz-card>
+
+<nz-card nzTitle="Actualizar Contraseña" class="mt-4" style="max-width: 100%;">
+  <form [formGroup]="passwordForm" nz-form (ngSubmit)="updatePassword()">
+    <!-- Contraseña actual -->
+    <nz-form-item>
+      <nz-form-label [nzSpan]="12" nzRequired>Contraseña actual</nz-form-label>
+      <nz-form-control [nzSpan]="30">
+        <input nz-input type="password" formControlName="oldPassword" />
+      </nz-form-control>
+    </nz-form-item>
+
+    <!-- Nueva contraseña -->
+    <nz-form-item>
+      <nz-form-label [nzSpan]="12" nzRequired>Nueva contraseña</nz-form-label>
+      <nz-form-control [nzSpan]="18">
+        <input nz-input type="password" formControlName="newPassword" />
+      </nz-form-control>
+    </nz-form-item>
+
+    <!-- Confirmar contraseña -->
+    <nz-form-item>
+      <nz-form-label [nzSpan]="12" nzRequired>Confirmar contraseña</nz-form-label>
+      <nz-form-control [nzSpan]="18">
+        <input nz-input type="password" formControlName="confirmPassword" />
+      </nz-form-control>
+    </nz-form-item>
+
+    <!-- Botón de actualizar -->
+    <nz-form-item>
+      <nz-form-control [nzSpan]="14" [nzOffset]="6">
+        <button nz-button nzType="primary" class="update-password-button" [disabled]="passwordForm.invalid">
+          Actualizar Contraseña
+        </button>
+      </nz-form-control>
+    </nz-form-item>
+  </form>
+</nz-card>
+</div>

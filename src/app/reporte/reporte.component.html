@@ -1,0 +1,205 @@
+<h2>REPORTES</h2>
+
+<div class="reporte-container">
+  <nz-tabset>
+    <nz-tab nzTitle="Reporte de Transferencia">
+      <div class="filters-panel transferencia-filter">
+        <div class="filter-field">
+          <label>Rango de fechas</label>
+          <nz-range-picker
+            [(ngModel)]="dateRangeTransferencia"
+            (ngModelChange)="filterReportsByDate('transferencia')"
+            nzFormat="dd/MM/yyyy">
+          </nz-range-picker>
+        </div>
+
+        <button nz-button nzType="primary" class="btn-generar-reporte" (click)="generarReporte('transferencia')">
+          Generar Reporte
+        </button>
+      </div>
+
+      <div class="tabla-contenedor">
+        <table class="table table-striped transfer-table">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Nombre</th>
+              <th>Caracteristicas del reporte</th>
+              <th>Documento</th>
+              <th>Bienes</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let reporte of filteredTransferReportData">
+              <td>{{ reporte.fecha | date:'dd/MM/yyyy' }}</td>
+              <td>{{ reporte.nombre || 'Sin nombre' }}</td>
+              <td>
+                <span class="detail-line"><strong>Motivo:</strong> {{ reporte.motivo_traslado || 'Sin motivo' }}</span>
+                <span class="detail-line"><strong>Tipo:</strong> {{ reporte.ID_TIPO_MODALIDAD || 'No registrado' }}</span>
+              </td>
+              <td>{{ reporte.documento_autorizacion || 'Sin documento' }}</td>
+              <td>{{ getCantidadBienes(reporte) }}</td>
+              <td>
+                <button nz-button nzType="primary" nzSize="small" class="btn-info" (click)="verReporte(reporte)">
+                  Ver Reporte
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="filteredTransferReportData.length === 0">
+              <td colspan="6" class="empty-cell">No hay reportes de transferencia para mostrar.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </nz-tab>
+
+    <nz-tab nzTitle="Reporte de Consulta">
+      <div class="consulta-container filters-panel">
+        <div class="consulta-col">
+          <div class="consulta-row">
+            <label class="consulta-label">Direccion</label>
+            <nz-select
+              [(ngModel)]="selectedDireccionId"
+              nzPlaceHolder="Seleccione direccion"
+              (ngModelChange)="onDireccionChange()"
+              nzRequired
+              nzSize="default">
+              <nz-option
+                *ngFor="let direccion of direcciones"
+                [nzValue]="direccion.id"
+                [nzLabel]="direccion.nombre">
+              </nz-option>
+            </nz-select>
+          </div>
+
+          <div class="consulta-row">
+            <label class="consulta-label">Ubicacion</label>
+            <nz-select
+              [(ngModel)]="selectedUbicacionId"
+              nzPlaceHolder="Seleccione ubicacion"
+              [nzDisabled]="!selectedDireccionId"
+              (ngModelChange)="onUbicacionChange()"
+              nzSize="default">
+              <nz-option
+                *ngFor="let ubicacion of ubicacionesFiltradas"
+                [nzValue]="ubicacion.ID_UBICACION"
+                [nzLabel]="ubicacion.NOMBRE">
+              </nz-option>
+            </nz-select>
+          </div>
+
+          <div class="consulta-row">
+            <label class="consulta-label">Ambiente</label>
+            <nz-select
+              [(ngModel)]="selectedAmbienteId"
+              nzPlaceHolder="Seleccione ambiente"
+              [nzDisabled]="!selectedUbicacionId"
+              nzSize="default">
+              <nz-option
+                *ngFor="let ambiente of ambientesFiltrados"
+                [nzValue]="ambiente.ID_AMBIENTE"
+                [nzLabel]="ambiente.NOMBRE_AMBIENTE">
+              </nz-option>
+            </nz-select>
+          </div>
+        </div>
+
+        <div class="consulta-col">
+          <div class="consulta-row">
+            <label class="consulta-label">Categoria</label>
+            <nz-select
+              [(ngModel)]="selectedCategoria"
+              (ngModelChange)="aplicarFiltroCategoria()"
+              nzPlaceHolder="Seleccione categoria (opcional)"
+              nzSize="default">
+              <nz-option
+                *ngFor="let categoria of categorias"
+                [nzValue]="categoria"
+                [nzLabel]="categoria.NOMBRE_CATEGORIA">
+              </nz-option>
+            </nz-select>
+          </div>
+
+          <div class="consulta-row">
+            <label class="consulta-label">Fecha</label>
+            <nz-date-picker
+              [(ngModel)]="consultaDate"
+              nzFormat="dd/MM/yyyy"
+              nzSize="default">
+            </nz-date-picker>
+          </div>
+
+          <div class="consulta-actions">
+            <button
+              nz-button
+              nzType="primary"
+              class="btn-generar-reporte"
+              (click)="generarReporte('consulta')"
+              [disabled]="!selectedDireccionId">
+              Generar Reporte
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="consulta-history" *ngIf="consultasGeneradas.length > 0">
+        <div class="consulta-history-header">
+          <h3>Consultas generadas</h3>
+          <span>{{ consultasGeneradas.length }} recientes</span>
+        </div>
+
+        <div class="consulta-history-grid">
+          <div
+            class="consulta-history-card"
+            *ngFor="let consulta of consultasGeneradas"
+            [class.active]="consulta.id === consultaSeleccionadaId">
+            <div>
+              <strong>{{ consulta.ambiente }}</strong>
+              <p>{{ consulta.direccion }} / {{ consulta.ubicacion }}</p>
+              <small>
+                {{ consulta.categoria }} - {{ consulta.bienes.length }} bienes -
+                Fecha consulta: {{ consulta.fechaConsulta }}
+              </small>
+            </div>
+            <div class="consulta-history-actions">
+              <button nz-button nzSize="small" class="btn-info" (click)="verConsultaGenerada(consulta)">Ver</button>
+              <button nz-button nzSize="small" nzType="default" class="btn-generar-reporte" (click)="generarPDF(consulta)">PDF</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tabla-contenedor">
+        <nz-table
+          #basicTable
+          [nzBordered]="false"
+          [nzData]="bienesFiltradosPorCategoria"
+          [nzSize]="'middle'"
+          [nzScroll]="{ x: '100%', y: 'calc(100vh - 285px)' }"
+          [nzShowPagination]="true"
+          [nzPageSize]="5"
+          [nzFrontPagination]="true"
+          [nzTotal]="bienesFiltradosPorCategoria.length"
+          class="table consulta-table">
+          <thead>
+            <tr>
+              <th nzWidth="15%">Bien</th>
+              <th nzWidth="10%">Categoria</th>
+              <th nzWidth="65%">Descripcion</th>
+              <th nzWidth="10%">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let bien of basicTable.data">
+              <td>{{ bien.codigo }}</td>
+              <td>{{ getCategoriaBien(bien) }}</td>
+              <td>{{ getDescripcionConsulta(bien) }}</td>
+              <td>{{ getEstadoBien(bien) }}</td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+    </nz-tab>
+  </nz-tabset>
+</div>

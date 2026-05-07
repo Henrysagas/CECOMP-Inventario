@@ -1,0 +1,102 @@
+<div class="form-container">
+  <h2>Descripción del Bien</h2>
+  <form (ngSubmit)="guardarBien()">
+    <div class="form-grid">
+      <!-- Columna 1: Descripción del Bien -->
+      <div class="columna">
+        <!-- Campo para el ID -->
+        <div class="form-group">
+          <label for="idBien">ID del Bien (Obligatorio)</label>
+          <input id="idBien" type="text" [(ngModel)]="nuevoBien.codigo" name="idBien" required>
+        </div>
+        
+
+        <!-- Campo para seleccionar el usuario asignado -->
+        <div class="form-group">
+          <label for="usuarioAsignado">Usuario Asignado</label>
+          <select id="usuarioAsignado" [(ngModel)]="nuevoBien.ID_USUARIO" name="usuarioAsignado" required>
+            <option *ngFor="let usuario of usuariosAdministradores" [value]="usuario.id">
+              {{ usuario.NOMBRES }} {{ usuario.APELLIDOS }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Campo para la Descripción -->
+        <div class="form-group">
+          <label for="descripcion">Otros</label>
+          <input id="descripcion" type="text" [(ngModel)]="nuevoBien.DESCRIPCION" name="descripcion">
+        </div>
+
+        <!-- Campo para seleccionar la Categoría -->
+        <div class="form-group">
+          <label for="categoria">Categoría</label>
+          <select id="categoria" [(ngModel)]="nuevoBien.ID_CATEGORIA" name="categoria" required>
+            <option *ngFor="let categoria of categorias" [value]="categoria.id">{{ categoria.NOMBRE_CATEGORIA }}</option>
+          </select>
+        </div>
+
+        <!-- Campos opcionales: Dimensiones, Modelo, Número de Serie, Tipo, Color -->
+        <div class="form-group">
+          <label for="dimension">Dimensiones (Opcional)</label>
+          <input id="dimension" type="text" [(ngModel)]="nuevoBien.DIMENSION" name="dimension">
+        </div>
+
+        <div class="form-group">
+          <label for="modelo">Modelo (Opcional)</label>
+          <input id="modelo" type="text" [(ngModel)]="nuevoBien.MODELO" name="modelo">
+        </div>
+
+        <div class="form-group">
+          <label for="numeroSerie">Número de Serie (Opcional)</label>
+          <input id="numeroSerie" type="text" [(ngModel)]="nuevoBien.NUMERO_SERIE" name="numeroSerie">
+        </div>
+
+        <div class="form-group">
+          <label for="tipo">Tipo (Opcional)</label>
+          <input id="tipo" type="text" [(ngModel)]="nuevoBien.TIPO" name="tipo">
+        </div>
+
+        <div class="form-group">
+          <label for="color">Color (Opcional)</label>
+          <input id="color" type="text" [(ngModel)]="nuevoBien.COLOR" name="color">
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Columna 2: Movimiento Inicial -->
+      <div class="columna">
+        <h3>Movimiento Inicial</h3>
+        <!-- Campo para seleccionar la Ubicación -->
+        <div class="form-group">
+          <label for="ubicacion">Ubicación</label>
+          <select id="ubicacion" [(ngModel)]="selectedUbicacionId" class="form-select" name="ubicacion" (change)="onUbicacionChange($event)" required>
+            <option *ngFor="let ubicacion of ubicaciones" [value]="ubicacion.ID_UBICACION">{{ ubicacion.NOMBRE }}</option>
+          </select>
+        </div>
+
+        <!-- Campo para seleccionar el Ambiente (dependiente de la ubicación) -->
+        <div class="form-group" *ngIf="showAmbienteSelect">
+          <label for="ambiente">Ambiente</label>
+          <select id="ambiente" [(ngModel)]="selectedAmbienteId" class="form-select" name="ambiente" required>
+            <option *ngFor="let ambiente of ambientes" [value]="ambiente.ID_AMBIENTE">{{ ambiente.NOMBRE_AMBIENTE }}</option>
+          </select>
+        </div>
+
+        <!-- Campo para seleccionar el Estado -->
+        <div class="form-group">
+          <label for="estado">Estado</label>
+          <select id="estado" [(ngModel)]="selectedEstado" class="form-select" name="estado" required>
+            <option *ngFor="let estado of estados" [value]="estado">{{ estado }}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botones de Guardar y Cancelar -->
+    <div class="buttons">
+      <button type="submit" class="btn btn-add" [disabled]="!selectedAmbienteId || !selectedEstado">Guardar Bien</button>
+      <button type="button" class="btn btn-back" (click)="cancelar()">Volver</button>
+    </div>
+  </form>
+</div>

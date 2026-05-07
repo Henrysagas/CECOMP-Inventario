@@ -1,0 +1,40 @@
+<div class="login-container">
+  <!-- Encabezado de bienvenida fuera del recuadro -->
+  <h2 class="login-header">BIENVENIDO AL SISTEMA DE CONTROL PATRIMONIAL DE CECOMP</h2>
+
+  <form nz-form [formGroup]="validateForm" (ngSubmit)="submitForm()" class="login-form">
+    <!-- Encabezado dentro del recuadro -->
+    <h3 class="login-title">INICIAR SESION</h3>
+
+    <nz-form-item>
+      <nz-form-control>
+        <nz-input-group nzPrefixIcon="user">
+          <input nz-input formControlName="userName" placeholder="Usuario" />
+        </nz-input-group>
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item>
+      <nz-form-control>
+        <nz-input-group nzPrefixIcon="lock">
+          <input nz-input type="password" formControlName="password" placeholder="Contraseña" />
+        </nz-input-group>
+      </nz-form-control>
+    </nz-form-item>
+
+    <div nz-row class="login-form-margin">
+      <div nz-col [nzSpan]="12">
+        <label nz-checkbox formControlName="remember">
+          <span>Recordarme</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Botón de inicio de sesión -->
+    <nz-form-item>
+      <button nz-button nzType="primary" class="login-form-button" [disabled]="!validateForm.valid">
+        Iniciar sesión
+      </button>
+    </nz-form-item>
+  </form>
+</div>

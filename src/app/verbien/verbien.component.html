@@ -1,0 +1,71 @@
+<div class="view-actions">
+  <button type="button" class="btn btn-dark" routerLink="/verbienes">Volver</button>
+</div>
+
+<nz-tabset>
+  <!-- TAB: Descripción -->
+  <nz-tab nzTitle="Descripción del Bien">
+    <div class="descripcion-column">
+      <nz-card nzTitle="Descripción del Bien" class="custom-card">
+  <div class="bien-detalles-grid">
+    <p><strong>ID:</strong> {{ bien.codigo }}</p>
+    <p><strong>Descripción:</strong> {{ bien.DESCRIPCION }}</p>
+    <p><strong>Modelo:</strong> {{ bien.MODELO }}</p>
+    <p><strong>Número de Serie:</strong> {{ bien.NUMERO_SERIE }}</p>
+    <p><strong>Tipo:</strong> {{ bien.TIPO }}</p>
+    <p><strong>Color:</strong> {{ bien.COLOR }}</p>
+    <p><strong>Categoría:</strong> {{ bien.categoria.NOMBRE_CATEGORIA }}</p>
+    <p><strong>Fecha de Ingreso:</strong> {{ bien.FECHA_INGRESO | date }}</p>
+    <p><strong>Usuario:</strong> {{ bien.usuario }}</p>
+  </div>
+</nz-card>
+
+    </div>
+  </nz-tab>
+
+  <!-- TAB: Movimientos -->
+  <nz-tab nzTitle="Movimientos">
+    <div class="movimientos-column">
+      <h3>Historial de Movimientos</h3>
+      <div *ngIf="movimientos && movimientos.length > 0; else noMovimientos">
+        <div class="tabla-contenedor">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th scope="col">Fecha de Modificación</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Ubicación</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let movimiento of movimientos">
+                <td>{{ movimiento.FECHA_MODIFICACION | date }}</td>
+                <td>{{ movimiento.ESTADO }}</td>
+                <td>{{ movimiento.ambiente?.ubicacion?.NOMBRE }} - {{ movimiento.ambiente?.NOMBRE_AMBIENTE }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <ng-template #noMovimientos>
+        <p>No hay movimientos registrados para este bien.</p>
+      </ng-template>
+    </div>
+  </nz-tab>
+
+  <!-- TAB: Historial de Responsables -->
+  <nz-tab nzTitle="Historial de Responsables">
+    <div class="historial-column">
+      <h3>Historial de Responsables</h3>
+      <nz-timeline>
+        <nz-timeline-item *ngFor="let item of historial">
+          <p>
+            <strong>{{ item.usuario?.NOMBRES }}</strong> 
+            ({{ item.fecha_inicio | date }} - 
+            {{ item.fecha_fin ? (item.fecha_fin | date) : 'Actualidad' }})
+          </p>
+        </nz-timeline-item>
+      </nz-timeline>
+    </div>
+  </nz-tab>
+</nz-tabset>

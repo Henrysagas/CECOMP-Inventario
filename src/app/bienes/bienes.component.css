@@ -1,0 +1,345 @@
+/* Main container styling */
+.bienes-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  text-align: center;
+  padding: clamp(12px, 2vw, 20px);
+  max-height: none;
+  min-height: 0;
+  width: 100%;
+  overflow: auto;
+  
+  background-color: #fffacd;
+}
+
+/* Header and title styling */
+h2 {
+  color: #d32f2f;
+  font-size: 2rem;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+/* Filter container styling */
+.filters-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+/* Search controls styling */
+.search-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.search-controls--fuera {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(180px, 1fr));
+  align-items: end;
+}
+
+.input-field {
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  background-color: white;
+  min-width: 150px;
+  flex: 1;
+}
+
+.input-field:focus {
+  border-color: #d32f2f;
+  outline: none;
+}
+
+.date-field {
+  display: flex;
+  flex: 1;
+  min-width: 170px;
+  flex-direction: column;
+  gap: 4px;
+  color: #7b1f2a;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-align: left;
+}
+
+.date-field .input-field {
+  width: 100%;
+}
+
+.search-field span {
+  visibility: hidden;
+}
+
+/* Button styling */
+.btn {
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: normal;
+  border: none;
+}
+
+.btn-primary,
+.btn-danger,
+.btn-search {
+  background-color: #d32f2f;
+  color: white;
+}
+
+.btn-primary:hover,
+.btn-danger:hover,
+.btn-search:hover {
+  background-color: #b71c1c;
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.btn:disabled:hover {
+  background-color: #d32f2f;
+}
+
+.table-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  margin: 4px 0 10px;
+  padding: 10px 0;
+}
+
+.pagination-summary {
+  color: #7b1f2a;
+  font-weight: 700;
+  text-align: left;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  margin: 0 0 16px;
+  color: #7b1f2a;
+  font-weight: 700;
+}
+
+.pagination-controls span {
+  min-width: 130px;
+  text-align: center;
+}
+
+/* Table container styling */
+.tabla-contenedor {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  background-color: #fffacd;
+  margin-bottom: 20px;
+}
+
+.table {
+  margin-top: 1rem;
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  border: 3px solid #d32f2f; /* Borde color guinda */
+
+  font-size: 1rem;
+
+}
+
+.table th {
+  background-color: #d32f2f;
+  color: white;
+  padding: 10px;
+  text-align: center;
+}
+
+.table tbody tr:nth-child(even) {
+  background-color: #fffacd; /* Amarillo claro */
+}
+.table tbody tr:nth-child(odd) {
+  background-color: #fff9c491; /* Amarillo más oscuro */
+}
+.table td {
+  background-color: inherit; /* Mantener el color alterno */
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  white-space: normal; /* Permitir saltos de línea */
+  word-wrap: break-word;
+  max-width: 250px; /* Limitar ancho de descripción */
+}
+
+.empty-cell {
+  padding: 28px 12px;
+  color: #7b1f2a;
+  font-weight: 700;
+}
+
+/* Action buttons in table: Mostrar en columna */
+.action-buttons {
+  display: flex;
+  flex-direction: column; /* Colocar botones uno debajo del otro */
+  gap: 8px;
+  align-items: stretch;   /* Que ocupen el mismo ancho */
+  justify-content: flex-start;
+}
+
+
+.action-buttons .btn {
+  padding: 6px 12px;
+  font-size: 0.9em;
+}
+
+/* Add button container */
+.add-bien-container {
+  margin: 20px 0;
+  text-align: right;
+  width: 100%;
+}
+
+/* Switch styling */
+.switch-container {
+  display: flex;
+  align-items: center;
+  margin: 10px 0;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+  margin-right: 10px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #d32f2f;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.switch-label {
+  font-size: 1rem;
+  color: #333;
+}
+h2 {
+  color: #d32f2f;
+  font-size: 2rem;
+  margin-bottom: 30px;
+  text-align: center;
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: 790;
+}
+/* NG-ZORRO tab customization */
+::ng-deep .ant-tabs-tab {
+  font-size: 1.3rem; /* Tamaño más grande para todas las pestañas */
+  font-weight: 500;
+  transition: font-size 0.3s ease-in-out;
+}
+
+::ng-deep .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #d32f2f !important;
+  font-weight: 600;
+
+}
+
+::ng-deep .ant-tabs-ink-bar {
+  background-color: #d32f2f !important;
+}
+
+::ng-deep .ant-tabs-tab:hover {
+  color: #d32f2f !important;
+}
+
+::ng-deep .ant-tabs-nav::before {
+  border-bottom: 1px solid #eee !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .search-controls {
+    flex-direction: column;
+  }
+
+  .search-controls--fuera {
+    display: flex;
+  }
+
+  .input-field {
+    width: 100%;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
+
+  .table-actions,
+  .pagination-controls {
+    flex-direction: column;
+  }
+
+  .tabla-contenedor {
+    max-height: 400px;
+  }
+
+  .bienes-container {
+    padding: 12px;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    margin-bottom: 18px;
+  }
+}
+

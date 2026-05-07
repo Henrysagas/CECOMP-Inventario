@@ -1,0 +1,112 @@
+/* Ajuste para asegurar que el contenedor tenga el espacio necesario */
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 0;
+  padding: clamp(10px, 2vw, 20px);
+  
+  gap: 20px;
+  background-color: #ffffe0; /* Fondo amarillo claro */
+  overflow-y: auto;
+  width: 100%;  /* Hace que el contenedor ocupe el 100% del ancho disponible */
+  max-width: 1000px;  /* Limita el ancho máximo del contenedor */
+  box-sizing: border-box;
+  margin: 0 auto;
+}
+
+.nz-card {
+  width: 100%;
+  max-width: 800px; /* Limita el tamaño máximo para evitar que el card se haga demasiado grande */
+  background-color: #fffacd; /* Fondo crema */
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 3px solid #d32f2f; /* Borde color guinda */
+
+  padding: 20px;
+  box-sizing: border-box;  /* Asegura que el padding no afecte al tamaño total */
+}
+
+/* Asegurar que los inputs no estén demasiado altos */
+.nz-input {
+  height: 40px;  /* Ajuste de altura de los campos de entrada */
+  font-size: 14px;  /* Ajuste de tamaño de la fuente dentro de los inputs */
+  box-sizing: border-box;  /* Asegura que el contenido no se desborde */
+}
+
+/* Ajustar las columnas de los formularios */
+.nz-form-item {
+  margin-bottom: 16px;  /* Aumenta el espacio entre los campos */
+  border: 3px solid #d32f2f; /* Borde color guinda */
+
+}
+
+.nz-form-label {
+  font-size: 14px;  /* Ajusta el tamaño de los labels */
+  line-height: 20px;  /* Asegura que los labels tengan suficiente espacio */
+  width: 100%;  /* Asegura que los labels usen el 100% del espacio disponible */
+  border: 3px solid #d32f2f; /* Borde color guinda */
+
+}
+
+.nz-form-control {
+  width: 100%;  /* Asegura que los inputs ocupen todo el ancho disponible */
+  padding: 0 10px;  /* Asegura que haya suficiente espacio dentro de los inputs */
+  border: 3px solid #d32f2f; /* Borde color guinda */
+
+}
+
+.nz-card {
+  border: 3px solid #d32f2f; /* Borde color guinda */
+
+  padding: 20px;
+  box-sizing: border-box;  /* Evita el desbordamiento en la tarjeta */
+}
+
+.mt-4 {
+  margin-top: 10px;  /* Reduces el margen superior si es necesario */
+}
+
+.update-password-button {
+  background-color: #d82f4b;  /* Rojo */
+  border-color: #d82f4b;  /* Rojo */
+}
+
+.update-password-button[disabled] {
+  background-color: #d9d9d9;  /* Color gris cuando está deshabilitado */
+  border-color: #d9d9d9;  /* Gris */
+}
+
+.update-password-button:not([disabled]) {
+  background-color: #d82f4b;  /* Rojo cuando está habilitado */
+  border-color: #d82f4b;  /* Rojo */
+}
+
+.update-password-button:not([disabled]):hover {
+  background-color: #b71c1c;  /* Rojo más oscuro al pasar el ratón */
+  border-color: #b71c1c;  /* Borde más oscuro */
+}
+.ant-card {
+  background-color: #fffacd !important; /* Fondo crema */
+}
+
+/* Estilo para pantalla pequeña */
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+  }
+
+  .nz-card {
+    max-width: 100%;
+    padding: 12px;
+  }
+
+  .nz-form-item {
+    margin-bottom: 12px;
+  }
+
+  .nz-form-label {
+    font-size: 12px;
+  }
+}

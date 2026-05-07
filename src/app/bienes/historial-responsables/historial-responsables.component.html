@@ -1,0 +1,19 @@
+<div class="view-actions" *ngIf="bien">
+  <button type="button" class="btn btn-dark" routerLink="/bienes">Volver</button>
+</div>
+
+  <!-- Columna Historial de Responsables -->
+  <div nz-col nzFlex="auto" [nzXs]="{ span: 24 }" [nzLg]="{ span: 8 }" class="historial-column">
+    <div class="historial-column">
+      <h3>Historial de Responsables</h3>
+      <nz-timeline>
+        <nz-timeline-item *ngFor="let item of historial">
+          <p>
+            <strong>{{ item.usuario?.NOMBRES }}</strong> 
+            ({{ item.fecha_inicio | date }} - 
+            {{ item.fecha_fin ? (item.fecha_fin | date) : 'Actualidad' }})
+          </p>
+        </nz-timeline-item>
+      </nz-timeline>
+    </div>
+  </div>

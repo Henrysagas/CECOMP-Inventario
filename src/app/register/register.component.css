@@ -1,0 +1,100 @@
+.register-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 70vh; /* Se ajusta automáticamente al contenido */
+  background-color: #ffffe0;
+  padding: 10px;
+}
+
+.register-form {
+  border: 3px solid #d32f2f;
+  max-width: 700px; /* Se hace más estrecho para reducir el espacio vacío */
+  width: 100%;
+  padding: 20px; /* Menos padding para compactar */
+  background-color: #fffacd;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.register-logo {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.register-logo img {
+  max-width: 150px;
+  height: auto;
+  border-radius: 10px;
+}
+
+.form-columns {
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.form-column {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+h2 {
+  color: #d32f2f;
+  font-size: 2rem;
+  margin-bottom: 30px;
+  text-align: center;
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: 790;
+}
+
+.register-form-button {
+  min-width: 140px;
+  background-color: #d82f4b; /* Rojo oscuro */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  margin: 10px auto
+}
+nz-form-label {
+  font-size: 1.2rem; /* Antes era más pequeño */
+  font-weight: bold;
+}
+
+.register-form-button:hover {
+  background-color: #b71c1c; /* Rojo más oscuro al pasar el ratón */
+}
+
+/* Ajustes para los campos de entrada */
+nz-input, nz-select {
+  height: 40px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.register-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.register-form-button.secondary {
+  background-color: #333;
+}
+
+/* Estilo responsivo */
+@media (max-width: 768px) {
+  .form-columns {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .form-column {
+    width: 100%;
+  }
+
+  .register-form-button {
+    width: 100%;
+  }
+}

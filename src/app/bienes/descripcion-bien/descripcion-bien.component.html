@@ -1,0 +1,48 @@
+<nz-card nzTitle="Descripción del Bien" nzBordered [nzLoading]="!bien">
+  <nz-descriptions
+    *ngIf="bien"
+    nzBordered
+    [nzColumn]="2"
+    nzTitle="Información General"
+  >
+    <nz-descriptions-item nzTitle="Código">
+      {{ bien.codigo || 'No definido' }}
+    </nz-descriptions-item>
+
+    <nz-descriptions-item nzTitle="Nombre">
+      {{ bien.nombre || 'No definido' }}
+    </nz-descriptions-item>
+
+    <nz-descriptions-item nzTitle="Categoría">
+      {{ bien.categoria?.nombre || 'Sin categoría' }}
+    </nz-descriptions-item>
+
+    <nz-descriptions-item nzTitle="Marca">
+      {{ bien.marca || 'Sin marca' }}
+    </nz-descriptions-item>
+
+    <nz-descriptions-item nzTitle="Modelo">
+      {{ bien.modelo || 'Sin modelo' }}
+    </nz-descriptions-item>
+
+    <nz-descriptions-item nzTitle="Serie">
+      {{ bien.serie || 'Sin serie' }}
+    </nz-descriptions-item>
+
+    <nz-descriptions-item nzTitle="Color">
+      {{ bien.color || 'Sin especificar' }}
+    </nz-descriptions-item>
+
+    <nz-descriptions-item nzTitle="Estado">
+      {{ bien.estado || 'Sin estado' }}
+    </nz-descriptions-item>
+
+    <nz-descriptions-item nzTitle="Condición">
+      {{ bien.condicion || 'Sin información' }}
+    </nz-descriptions-item>
+
+    <nz-descriptions-item nzTitle="Valor Referencial">
+      S/ {{ bien.valor_referencial || '0.00' }}
+    </nz-descriptions-item>
+  </nz-descriptions>
+</nz-card>

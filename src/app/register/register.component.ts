@@ -1,0 +1,119 @@
+import { Component } from '@angular/core';
+import { FormControl, FormGroup, Validators, NonNullableFormBuilder, AbstractControl, ValidationErrors } from '@angular/forms';
+import { Router } from '@angular/router';
+import { AuthService } from '../auth.service';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule } from '@angular/forms';
+import { NzFormModule } from 'ng-zorro-antd/form';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzSelectModule } from 'ng-zorro-antd/select';
+
+// Validador personalizado para contraseñas coincidentes
+function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
+  const password = control.get('password')?.value;
+  const confirmPassword = control.get('confirmPassword')?.value;
+  return password === confirmPassword ? null : { passwordMismatch: true };
+}
+
+@Component({
+  selector: 'app-register',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    NzFormModule,
+    NzInputModule,
+    NzButtonModule,
+    NzIconModule,
+    NzSelectModule
+  ],
+  templateUrl: './register.component.html',
+  styleUrls: ['./register.component.css']
+})
+export class RegisterComponent {
+  registerForm: FormGroup = this.fb.group({
+    nombres: ['', [Validators.required]],
+    apellidos: ['', [Validators.required]],
+    cargo: ['', [Validators.required]],
+    dni: ['', [Validators.required]],
+    userName: ['', [Validators.required]],
+    password: ['', [Validators.required, Validators.minLength(6)]],
+    confirmPassword: ['', [Validators.required]],
+    estado: ['Activo', Validators.required],  // Valor por defecto "Activo"
+    rol: ['1', Validators.required],  // Valor por defecto "Administrador"
+  });
+
+  constructor(
+    private fb: NonNullableFormBuilder,
+    private authService: AuthService,
+    private router: Router,
+    private message: NzMessageService
+  ) {}
+
+  submitForm(): void {
+    if (this.registerForm.valid) {
+      const { nombres, apellidos, cargo, dni, userName, password, rol } = this.registerForm.value;
+
+      this.authService.register(nombres, apellidos, userName, dni, "Activo", cargo, password, rol).subscribe({
+        next: () => {
+          this.message.success('Registro exitoso');
+          this.router.navigate(['/login']);
+        },
+        error: (err) => {
+          console.error('Registro fallido', err);
+        
+          // Detallar más información si el error es un objeto con detalles
+          if (err && err.error) {
+            console.error('Detalles del error:', err.error);
+            
+            // Si el error tiene detalles específicos (por ejemplo, mensajes de validación), mostrarlos
+            if (err.error.errors) {
+              // Aquí se muestra el detalle de los errores de validación
+              for (const field in err.error.errors) {
+                if (err.error.errors.hasOwnProperty(field)) {
+                  console.error(`${field}: ${err.error.errors[field]}`);
+                  this.message.error(`Error en el campo ${field}: ${err.error.errors[field]}`);
+                }
+              }
+            } else {
+              this.message.error('Error desconocido. Por favor, intente nuevamente.');
+            }
+          }
+        
+          if (err && err.status) {
+            console.error('Código de estado:', err.status);
+          }
+          
+          if (err && err.message) {
+            console.error('Mensaje del error:', err.message);
+          }
+        
+          // Mensaje genérico de error
+          if (err.status === 400) {
+            this.message.error('Datos inválidos. Verifica los campos e intenta de nuevo.');
+          } else if (err.status === 422) {
+            this.message.error('Algunos campos son incorrectos. Por favor, revisa los errores detallados.');
+          } else if (err.status === 500) {
+            this.message.error('Error interno del servidor. Intenta más tarde.');
+          } else {
+            this.message.error('Ocurrió un error durante el registro');
+          }
+        }
+      });
+    } else {
+      Object.values(this.registerForm.controls).forEach(control => {
+        if (control.invalid) {
+          control.markAsDirty();
+          control.updateValueAndValidity({ onlySelf: true });
+        }
+      });
+    }
+  }
+
+  volverUsuarios(): void {
+    this.router.navigate(['/usuarios']);
+  }
+}

@@ -1,0 +1,176 @@
+<nz-tabset (nzSelectedIndexChange)="onTabChange($event)">
+  <nz-tab nzTitle="Bienes en Inventario">
+<div class="bienes-container">
+  <div class="filters-container">  
+    <div class="search-controls">
+      
+
+      <input type="date" class="input-field" [(ngModel)]="fechaSeleccionada" (change)="onFechaSeleccionadaChange()" />
+
+
+      <!-- Campo de búsqueda para nombre o descripción del bien -->
+      <input type="text" id="codigoInput" placeholder="Ingrese el código del bien o nombre/descripción" 
+             class="input-field" [(ngModel)]="searchTerm" (input)="onSearchTermChange()" />
+  
+      <!-- Campo de búsqueda manual para la categoría -->
+      <input *ngIf="manualCategoria" type="text" placeholder="Escriba la categoría" 
+             class="input-field" [(ngModel)]="categoriaManual" (input)="onCategoriaManualChange()" />
+  
+      <!-- Select para categoría, sólo si no es manual -->
+
+      <input type="text" placeholder="Última Ubicación" class="input-field" [(ngModel)]="ubicacionTerm" (input)="onUbicacionChange()" />
+        
+      <!-- Nuevo campo de búsqueda para Último Ambiente -->
+      <input type="text" placeholder="Último Ambiente" class="input-field" [(ngModel)]="ambienteTerm" (input)="onAmbienteChange()" />
+  
+      <div *ngIf="!manualCategoria">
+        <select id="categoriaSelect" class="input-field" (change)="onCategoriaChange($event)">
+          <option value="">Todas las Categorías</option>
+          <option *ngFor="let categoria of categorias" [value]="categoria.id">{{ categoria.NOMBRE_CATEGORIA }}</option>
+        </select>
+      </div>
+      <!-- Botón para alternar entre select e input manual -->
+      <button (click)="toggleManualCategoria()" class="btn btn-search">Búsqueda Manual</button>
+
+      <!-- Filtros dinámicos según la categoría seleccionada -->
+      <div *ngIf="selectedCategoria" class="dynamic-filters">
+        <input *ngIf="selectedCategoria.MODELO" type="text" placeholder="Modelo" class="input-field" />
+        <input *ngIf="selectedCategoria.TIPO" type="text" placeholder="Tipo" class="input-field" />
+        <input *ngIf="selectedCategoria.COLOR" type="text" placeholder="Color" class="input-field" />
+        <input *ngIf="selectedCategoria.DIMENSION" type="text" placeholder="Dimensión" class="input-field" />
+          
+      </div>
+    </div>
+  </div>
+  
+
+
+
+  <div class="table-actions">
+    <div class="pagination-summary">
+      Mostrando {{ indiceInicio }}-{{ indiceFin }} de {{ bienesFiltrados.length }} bienes
+    </div>
+    <button class="btn btn-primary" [routerLink]="['/bienes/nuevo']">Agregar Bien</button>
+  </div>
+
+  <!-- Grid de Bienes -->
+  <div class="tabla-contenedor">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope="col">ID</th>
+          <th scope="col">Descripción</th>
+          <th scope="col">Categoría</th>
+          <th scope="col">Usuario</th>
+          <th scope="col">Estado Actual</th> <!-- Nueva columna -->
+          <th scope="col">Ubicación Actual</th> <!-- Nueva columna -->
+          <th scope="col">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let bien of bienesPaginados">
+          <td>{{ bien.codigo }}</td>
+          <td>
+            <span *ngIf="bien.MODELO">Modelo: {{ bien.MODELO }}</span><br>
+            <span *ngIf="bien.DIMENSION">Dimensión: {{ bien.DIMENSION }}</span><br>
+            <span *ngIf="bien.NUMERO_SERIE">N° Serie: {{ bien.NUMERO_SERIE }}</span><br>
+            <span *ngIf="bien.TIPO">Tipo: {{ bien.TIPO }}</span><br>
+            <span *ngIf="bien.COLOR">Color: {{ bien.COLOR }}</span>
+            <span *ngIf="bien.DESCRIPCION">Otros: {{ bien.DESCRIPCION }}</span><br>
+
+          </td>
+                    <td>{{ bien.categoria.NOMBRE_CATEGORIA }}</td>
+          <td>{{ getUsuarioEnFecha(bien) }}</td>
+          <td>{{ getEstadoEnFecha(bien) }}</td>
+          <td>{{ getUbicacionEnFecha(bien) }}</td>
+          
+  <td>
+    <div class="action-buttons">
+      <button class="btn btn-danger" [routerLink]="['/detalles', bien.id]">Editar</button>
+      <button class="btn btn-danger" (click)="eliminarBien(bien.id)">Eliminar</button>
+      <button class="btn btn-danger" [routerLink]="['/historial-movimientos', bien.id]">Ver Movimientos</button>
+      <button class="btn btn-danger" [routerLink]="['/historial-responsables', bien.id]">Ver Responsables</button>
+
+    </div>
+  </td>
+
+          
+        </tr>
+        <tr *ngIf="bienesFiltrados.length === 0">
+          <td colspan="7" class="empty-cell">No se encontraron bienes con los filtros aplicados.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+  
+  
+    <!-- Botón para agregar un nuevo bien -->
+  <div class="pagination-controls" *ngIf="bienesFiltrados.length > tamanioPagina">
+    <button class="btn btn-search" (click)="irPaginaAnterior()" [disabled]="paginaActual === 1">Anterior</button>
+    <span>Pagina {{ paginaActual }} de {{ totalPaginas }}</span>
+    <button class="btn btn-search" (click)="irPaginaSiguiente()" [disabled]="paginaActual === totalPaginas">Siguiente</button>
+  </div>
+</div>
+</nz-tab>
+<nz-tab nzTitle="Bienes Fuera del Inventario">
+  <div class="bienes-container">
+  <div class="filters-container">
+    <h2>Buscar Bienes Fuera del Inventario</h2>
+    <div class="search-controls search-controls--fuera">
+      <label class="date-field">
+        <span>Salida desde</span>
+        <input type="date" class="input-field" [(ngModel)]="fechaSalidaInicio" (change)="onFechaSalidaInicioChange()" />
+      </label>
+      <label class="date-field">
+        <span>Salida hasta</span>
+        <input type="date" class="input-field" [(ngModel)]="fechaSalidaFin" (change)="onFechaSalidaFinChange()" />
+      </label>
+      <label class="date-field search-field">
+        <span>&nbsp;</span>
+        <input type="text" class="input-field" [(ngModel)]="searchTermFuera" (input)="onSearchTermChangeFuera()" placeholder="Código o Descripción" />
+      </label>
+    </div>
+  </div>
+
+  <div class="tabla-contenedor">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Descripción</th>
+          <th>Categoría</th>
+          <th>Usuario</th>
+          <th>Ubicación</th>
+          <th>Fecha de Salida</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let bien of bienesFueraPaginados">
+          <td>{{ bien.codigo }}</td>
+          <td>{{ bien.DESCRIPCION }}</td>
+
+          <td>{{ bien.categoria.NOMBRE_CATEGORIA }}</td>
+          <td>{{ getUsuarioEnFecha(bien) }}</td>
+          <td>{{ getUbicacionEnFecha(bien) }}</td>       
+          <td>{{ getUltimaFechaSalida(bien) }}</td>
+
+         
+        </tr>
+        <tr *ngIf="bienesFueraFiltrados.length === 0">
+          <td colspan="6" class="empty-cell">No se encontraron bienes fuera del inventario.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="pagination-controls" *ngIf="bienesFueraFiltrados.length > tamanioPaginaFuera">
+    <button class="btn btn-search" (click)="irPaginaAnteriorFuera()" [disabled]="paginaActualFuera === 1">Anterior</button>
+    <span>
+      Mostrando {{ indiceInicioFuera }}-{{ indiceFinFuera }} de {{ bienesFueraFiltrados.length }}
+      | Pagina {{ paginaActualFuera }} de {{ totalPaginasFuera }}
+    </span>
+    <button class="btn btn-search" (click)="irPaginaSiguienteFuera()" [disabled]="paginaActualFuera === totalPaginasFuera">Siguiente</button>
+  </div>
+  </div>
+</nz-tab>
+</nz-tabset>

@@ -1,0 +1,169 @@
+.detalles-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: clamp(12px, 2vw, 20px);
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .action-buttons {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+  }
+}
+
+.bien-detalles, .movimientos-container {
+  flex: 1 1 300px;
+  background-color: #ffffe0;
+  padding: 20px;
+  margin-right: 0;
+  border-radius: 8px;
+}
+
+.bien-detalles {
+  margin-right: 20px;
+}
+
+.movimientos-container {
+  flex: 1;
+  background-color: #ffffe0;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.bien-info p {
+  margin: 10px 0;
+}
+
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-save {
+  background-color: #d32f2f;
+  color: white;
+}
+
+.btn-cancel, .btn-edit {
+  background-color: #333;
+  color: white;
+}
+
+.btn-add {
+  background-color: #d32f2f;
+  color: white;
+  margin-top: 20px;
+}
+
+.tabla-contenedor {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.detalles-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: clamp(12px, 2vw, 20px);
+  gap: 16px;
+}
+
+.descripcion-column, .movimientos-column {
+  background-color: #ffffe0;
+  padding: 20px;
+  border-radius: 8px;
+  flex-grow: 1;
+  margin-right: 0;
+  max-width: 100%;
+}
+
+.descripcion-column:last-child, .movimientos-column:last-child {
+  margin-right: 0;
+}
+
+.bien-detalles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.form-control {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.table {
+  margin-top: 1rem;
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+}
+
+.table th {
+  background-color: #d32f2f;
+  color: white;
+  padding: 10px;
+  text-align: left;
+}
+
+.table td {
+  background-color: #ffffe0;
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+.btn-ver-bien-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px; /* Opcional: espacio arriba del botón */
+}
+
+.btn-ver-bien {
+  background-color: #d32f2f;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+::ng-deep .ant-card {
+  background-color: #ffffe0 !important; /* mismo fondo que tus contenedores */
+  border-radius: 8px !important;        /* mismo redondeado */
+  border: none !important;              /* elimina el borde gris por defecto */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1); /* sutil sombra para diferenciar */
+}
+
+::ng-deep .ant-card-head {
+  background-color: #d32f2f !important; /* encabezado rojo */
+  color: white !important;              /* texto blanco */
+  font-weight: bold;
+  border-bottom: none !important;
+}
+
+::ng-deep .ant-card-head-title {
+  font-size: 1.1rem;
+}
+
+::ng-deep .ant-card-body {
+  background-color: #ffffe0 !important; /* que el body también*/
+}

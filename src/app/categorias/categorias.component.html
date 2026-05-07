@@ -1,0 +1,106 @@
+<section class="categoria-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Inventario</p>
+      <h2>Gestion de categorias</h2>
+      <p class="subtitle">Busca, selecciona y administra las categorias desde una sola vista.</p>
+    </div>
+
+    <button type="button" class="btn btn-primary" (click)="mostrarFormularioAgregar()">
+      + Nueva categoria
+    </button>
+  </header>
+
+  <p *ngIf="mensaje" class="message" [class.message-success]="tipoMensaje === 'success'" [class.message-error]="tipoMensaje === 'error'">
+    {{ mensaje }}
+  </p>
+
+  <div class="content-layout">
+    <div class="panel list-panel">
+      <div class="panel-header">
+        <div>
+          <h3>Categorias registradas</h3>
+          <span>{{ categorias.length }} en total</span>
+        </div>
+      </div>
+
+      <label class="search-field" for="buscarCategoria">
+        <span>Buscar categoria</span>
+        <input
+          id="buscarCategoria"
+          type="search"
+          placeholder="Ej. laptop, impresora, mueble"
+          [(ngModel)]="filtroCategoria"
+        />
+      </label>
+
+      <div *ngIf="cargando" class="empty-state">Cargando categorias...</div>
+
+      <div *ngIf="!cargando && categoriasFiltradas.length === 0" class="empty-state">
+        No se encontraron categorias con ese nombre.
+      </div>
+
+      <div *ngIf="!cargando && categoriasFiltradas.length > 0" class="category-list" role="list">
+        <button
+          type="button"
+          class="category-item"
+          *ngFor="let categoria of categoriasFiltradas"
+          [class.active]="categoriaSeleccionada.id === categoria.id"
+          (click)="seleccionarCategoria(categoria)"
+        >
+          <span>{{ categoria.NOMBRE_CATEGORIA }}</span>
+          <small>ID {{ categoria.id }}</small>
+        </button>
+      </div>
+    </div>
+
+    <div class="panel detail-panel" *ngIf="!isAdding && !isEditing">
+      <ng-container *ngIf="categoriaSeleccionada.id; else sinSeleccion">
+        <p class="eyebrow">Categoria seleccionada</p>
+        <h3>{{ categoriaSeleccionada.NOMBRE_CATEGORIA }}</h3>
+        <p class="detail-copy">Puedes editar el nombre o eliminar esta categoria si ya no se utiliza.</p>
+
+        <div class="actions">
+          <button type="button" class="btn btn-secondary" (click)="editarCategoria()">Editar</button>
+          <button type="button" class="btn btn-danger" [disabled]="verificandoEliminacion" (click)="eliminarCategoria()">
+            {{ verificandoEliminacion ? 'Verificando...' : 'Eliminar' }}
+          </button>
+          <button type="button" class="btn btn-light" (click)="limpiarSeleccion()">Quitar seleccion</button>
+        </div>
+      </ng-container>
+
+      <ng-template #sinSeleccion>
+        <div class="empty-detail">
+          <h3>Selecciona una categoria</h3>
+          <p>Elige una categoria de la lista para ver sus acciones disponibles.</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <div class="panel form-panel" *ngIf="isAdding || isEditing">
+      <p class="eyebrow">{{ isEditing ? 'Editar' : 'Nueva categoria' }}</p>
+      <h3>{{ isEditing ? 'Actualizar categoria' : 'Agregar categoria' }}</h3>
+
+      <form (ngSubmit)="guardarCambios()">
+        <label class="form-group" for="nombreCategoria">
+          <span>Nombre de la categoria</span>
+          <input
+            type="text"
+            id="nombreCategoria"
+            [(ngModel)]="categoriaFormulario.NOMBRE_CATEGORIA"
+            name="nombreCategoria"
+            placeholder="Ej. Equipo de computo"
+            required
+          />
+        </label>
+
+        <div class="actions">
+          <button type="submit" class="btn btn-primary">
+            {{ isEditing ? 'Guardar cambios' : 'Agregar categoria' }}
+          </button>
+          <button type="button" class="btn btn-light" (click)="cancelarAccion()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>

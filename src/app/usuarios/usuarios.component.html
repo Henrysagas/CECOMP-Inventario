@@ -1,0 +1,179 @@
+<div class="usuarios-container">
+  <h2>GESTI&Oacute;N DE USUARIOS</h2>
+
+  <nz-tabset [(nzSelectedIndex)]="tabSeleccionado" class="usuarios-tabs">
+    <nz-tab nzTitle="Gesti&oacute;n de usuarios">
+      <div class="tab-content">
+        <label nz-checkbox [(ngModel)]="mostrarInactivos" (ngModelChange)="toggleMostrarInactivos()" class="estado-checkbox">
+          Mostrar usuarios inactivos
+        </label>
+
+        <nz-table #basicTable [nzData]="usuarios" [nzBordered]="false" [nzSize]="'middle'" class="tabla-contenedor">
+          <thead>
+            <tr>
+              <th nzWidth="18%">Nombres</th>
+              <th nzWidth="18%">Apellidos</th>
+              <th nzWidth="17%">Usuario</th>
+              <th nzWidth="15%">Rol</th>
+              <th nzWidth="12%">Estado</th>
+              <th nzWidth="20%">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let usuario of usuarios">
+              <td>{{ usuario.NOMBRES }}</td>
+              <td>{{ usuario.APELLIDOS }}</td>
+              <td>{{ usuario.USU }}</td>
+              <td>
+                <nz-select [(ngModel)]="usuario.ID_ROL" (ngModelChange)="onRolChange(usuario)" [nzDisabled]="usuario.ID_ROL === 1">
+                  <nz-option *ngFor="let rol of roles" [nzValue]="rol.id" [nzLabel]="rol.nombre"></nz-option>
+                </nz-select>
+              </td>
+              <td>{{ usuario.estado }}</td>
+              <td>
+                <div class="acciones-usuario">
+                  <button type="button" nz-button nzType="primary" (click)="prepararTransferenciaDesdeUsuario(usuario.id)">Ver bienes</button>
+                  <button
+                    type="button"
+                    nz-button
+                    nzType="primary"
+                    (click)="cambiarEstadoUsuario(usuario)">
+                    {{ usuario.estado === 'Activo' ? 'Inactivar' : 'Activar' }}
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </nz-table>
+
+        <nz-form-item>
+          <button type="button" nz-button nzType="primary" class="login-form-button" (click)="navigateToRegister()">Registrarse</button>
+        </nz-form-item>
+      </div>
+    </nz-tab>
+
+    <nz-tab nzTitle="Movimiento masivo de bienes">
+      <div class="tab-content transfer-panel">
+        <div class="transfer-header">
+          <div class="transfer-field">
+            <label>Usuario origen</label>
+            <nz-select
+              [(ngModel)]="usuarioOrigenId"
+              nzPlaceHolder="Seleccione el usuario origen"
+              (ngModelChange)="cargarBienesDeOrigen($event)">
+              <nz-option
+                *ngFor="let usuario of usuarios"
+                [nzValue]="usuario.id"
+                [nzLabel]="usuario.NOMBRES + ' ' + usuario.APELLIDOS">
+              </nz-option>
+            </nz-select>
+          </div>
+
+          <div class="transfer-field">
+            <label>Usuario destino</label>
+            <nz-select [(ngModel)]="usuarioDestino" nzPlaceHolder="Seleccione el usuario destino" [nzDisabled]="!usuarioOrigenId">
+              <nz-option
+                *ngFor="let usuario of usuariosActivos"
+                [nzValue]="usuario.id"
+                [nzLabel]="usuario.NOMBRES + ' ' + usuario.APELLIDOS">
+              </nz-option>
+            </nz-select>
+          </div>
+
+          <button
+            type="button"
+            nz-button
+            nzType="primary"
+            [nzLoading]="transfiriendoBienes"
+            [disabled]="transfiriendoBienes || bienes.length === 0"
+            (click)="transferirBienes()">
+            Transferir bienes
+          </button>
+        </div>
+
+        <div class="movement-filters">
+          <div class="transfer-field">
+            <label>Buscar bien</label>
+            <input
+              nz-input
+              [(ngModel)]="busquedaBienes"
+              (ngModelChange)="actualizarSeleccionarTodos()"
+              placeholder="C&oacute;digo, categor&iacute;a o descripci&oacute;n" />
+          </div>
+
+          <div class="transfer-field">
+            <label>Categor&iacute;a</label>
+            <nz-select
+              [(ngModel)]="categoriaFiltro"
+              nzPlaceHolder="Todas las categor&iacute;as"
+              nzAllowClear
+              (ngModelChange)="actualizarSeleccionarTodos()">
+              <nz-option
+                *ngFor="let categoria of categoriasBienes"
+                [nzValue]="categoria.id"
+                [nzLabel]="categoria.nombre">
+              </nz-option>
+            </nz-select>
+          </div>
+
+          <div class="transfer-field">
+            <label>Selecci&oacute;n</label>
+            <nz-select [(ngModel)]="estadoSeleccionFiltro" (ngModelChange)="actualizarSeleccionarTodos()">
+              <nz-option nzValue="todos" nzLabel="Todos"></nz-option>
+              <nz-option nzValue="seleccionados" nzLabel="Seleccionados"></nz-option>
+              <nz-option nzValue="pendientes" nzLabel="Sin seleccionar"></nz-option>
+            </nz-select>
+          </div>
+
+          <button type="button" nz-button nzType="default" (click)="limpiarFiltrosMovimiento()">
+            Limpiar filtros
+          </button>
+        </div>
+
+        <div class="movement-summary">
+          Mostrando {{ bienesFiltradosMovimiento.length }} de {{ bienes.length }} bienes.
+          Seleccionados: {{ cantidadSeleccionada }}.
+        </div>
+
+        <nz-table
+          [nzData]="bienesFiltradosMovimiento"
+          [nzBordered]="true"
+          [nzSize]="'middle'"
+          [nzLoading]="cargandoBienes"
+          class="tabla-contenedor transfer-table"
+          [nzScroll]="{ x: '100%', y: '420px' }"
+          [nzShowPagination]="false">
+          <thead>
+            <tr>
+              <th nzWidth="8%">
+                <label
+                  nz-checkbox
+                  [(ngModel)]="seleccionarTodos"
+                  (ngModelChange)="toggleSeleccionarTodos()"
+                  [nzDisabled]="bienesFiltradosMovimiento.length === 0">
+                </label>
+              </th>
+              <th nzWidth="18%">C&oacute;digo</th>
+              <th nzWidth="22%">Categor&iacute;a</th>
+              <th nzWidth="32%">Descripci&oacute;n</th>
+              <th nzWidth="20%">Opciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let bien of bienesFiltradosMovimiento">
+              <td>
+                <label nz-checkbox [(ngModel)]="bien.seleccionado" (ngModelChange)="actualizarSeleccionarTodos()"></label>
+              </td>
+              <td>{{ bien.codigo }}</td>
+              <td>{{ bien.categoria?.NOMBRE_CATEGORIA }}</td>
+              <td>{{ bien.DESCRIPCION }}</td>
+              <td>
+                <button type="button" nz-button nzType="default" [routerLink]="['/detalles', bien.id]">Editar</button>
+              </td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+    </nz-tab>
+  </nz-tabset>
+</div>

@@ -1,0 +1,39 @@
+/* You can add global styles to this file, and also import other style files */
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background-color: #fffacd;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+img,
+svg,
+canvas,
+video {
+  max-width: 100%;
+}
+
+.table,
+.ant-table {
+  font-size: clamp(1rem, 0.94rem + 0.22vw, 1.15rem);
+}
+
+.table th,
+.table td,
+.ant-table-thead > tr > th,
+.ant-table-tbody > tr > td {
+  line-height: 1.35;
+}
+
+.view-actions {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 12px;
+}

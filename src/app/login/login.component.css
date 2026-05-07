@@ -1,0 +1,92 @@
+/* Centrar el contenedor del login */
+.login-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100%;
+  padding: 32px 16px;
+  background-color: #ffffe0;
+}
+
+.login-header {
+  max-width: 900px;
+  color: #d32f2f;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  line-height: 1.15;
+  margin-bottom: 28px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.login-form {
+  max-width: 460px;
+  width: 90%;
+  padding: 34px 32px;
+  background-color: #fffacd;
+  border-radius: 8px;
+  box-shadow: 0 10px 28px rgba(118, 29, 42, 0.18);
+  text-align: center;
+  border: 3px solid #d32f2f;
+}
+
+.login-title {
+  color: #d32f2f;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.15;
+  margin-bottom: 26px;
+}
+
+nz-form-item {
+  margin-bottom: 18px;
+}
+
+.login-form-margin {
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.login-form-button {
+  width: 68%;
+  min-height: 46px;
+  margin: 10px auto 0;
+  background-color: #d82f4b;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+input[nz-input] {
+  min-height: 44px;
+  font-size: 1.2rem;
+}
+
+label[nz-checkbox] span {
+  font-size: 1.08rem;
+}
+
+a {
+  color: #d82f4b;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 576px) {
+  .login-header {
+    font-size: 1.8rem;
+  }
+
+  .login-form {
+    padding: 24px 18px;
+    width: 100%;
+  }
+
+  .login-form-button {
+    width: 100%;
+  }
+}

@@ -1,0 +1,97 @@
+<div class="register-container">
+  <h2 class="login-header">REGISTRO DE USUARIO</h2>
+
+  <form nz-form [formGroup]="registerForm" (ngSubmit)="submitForm()" class="register-form">
+
+
+    <div class="form-columns">
+      <!-- Primera columna: Nombres, Apellidos, Cargo, DNI -->
+      <div class="form-column">
+        <nz-form-item>
+          <nz-form-label [nzSpan]="6">Nombres</nz-form-label>
+          <nz-form-control [nzSpan]="14">
+            <nz-input-group nzPrefixIcon="user">
+              <input nz-input formControlName="nombres" placeholder="Nombres" />
+            </nz-input-group>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzSpan]="6">Apellidos</nz-form-label>
+          <nz-form-control [nzSpan]="14">
+            <nz-input-group nzPrefixIcon="user">
+              <input nz-input formControlName="apellidos" placeholder="Apellidos" />
+            </nz-input-group>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzSpan]="6">Cargo</nz-form-label>
+          <nz-form-control [nzSpan]="14">
+            <nz-input-group nzPrefixIcon="user">
+              <input nz-input formControlName="cargo" placeholder="Cargo" />
+            </nz-input-group>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzSpan]="6">DNI</nz-form-label>
+          <nz-form-control [nzSpan]="14">
+            <nz-input-group nzPrefixIcon="idcard">
+              <input nz-input formControlName="dni" placeholder="DNI" />
+            </nz-input-group>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <!-- Segunda columna: Usuario, Contraseña, Estado, Rol -->
+      <div class="form-column">
+        <nz-form-item>
+          <nz-form-label [nzSpan]="6">Usuario</nz-form-label>
+          <nz-form-control [nzSpan]="14">
+            <nz-input-group nzPrefixIcon="user">
+              <input nz-input formControlName="userName" placeholder="Usuario" />
+            </nz-input-group>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzSpan]="6">Contraseña</nz-form-label>
+          <nz-form-control [nzSpan]="14">
+            <nz-input-group nzPrefixIcon="lock">
+              <input nz-input type="password" formControlName="password" placeholder="Contraseña" />
+            </nz-input-group>
+          </nz-form-control>
+        </nz-form-item>
+        
+        <nz-form-item>
+          <nz-form-label [nzSpan]="6">Confirmar</nz-form-label>
+          <nz-form-control [nzSpan]="14">
+            <nz-input-group nzPrefixIcon="lock">
+              <input nz-input type="password" formControlName="confirmPassword" placeholder="Confirmar contraseña" />
+            </nz-input-group>
+          </nz-form-control>
+        </nz-form-item>
+        
+        <nz-form-item>
+          <nz-form-label [nzSpan]="6">Rol</nz-form-label>
+          <nz-form-control [nzSpan]="14">
+            <nz-select formControlName="rol" placeholder="Rol">
+              <nz-option nzValue="1" nzLabel="Administrador"></nz-option>
+              <nz-option nzValue="2" nzLabel="Usuario"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+    </div>
+
+    <nz-form-item class="register-actions">
+      <button nz-button nzType="primary" class="register-form-button" [disabled]="!registerForm.valid">
+        Registrarse
+      </button>
+      <button nz-button type="button" class="register-form-button secondary" (click)="volverUsuarios()">
+        Volver
+      </button>
+    </nz-form-item>
+  </form>
+</div>

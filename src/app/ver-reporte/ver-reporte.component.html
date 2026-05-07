@@ -1,0 +1,83 @@
+<div class="reporte-detalle-container">
+  <div class="reporte-header">
+    <h2>Detalles del Reporte</h2>
+    <div class="acciones">
+      <button class="btn-info btn-secondary" (click)="volver()">Volver</button>
+      <button class="btn-info" (click)="generarPDF()" [disabled]="!reporte">Ver PDF</button>
+    </div>
+  </div>
+
+  <div class="reporte-firmas-info" *ngIf="reporte; else reporteCargando">
+    <div class="detalle-reporte">
+      <p><strong>Fecha:</strong> <span>{{ reporte.fecha | date:'shortDate' }}</span></p>
+      <p><strong>Nombre:</strong> <span>{{ reporte.nombre }}</span></p>
+      <p><strong>Motivo:</strong> <span>{{ reporte.motivo_traslado }}</span></p>
+      <p><strong>Documento:</strong> <span>{{ reporte.documento_autorizacion }}</span></p>
+      <p class="detalle-wide">
+        <strong>Destino:</strong>
+        <span>{{ ubicacion?.NOMBRE || 'Sin ubicacion' }} || {{ ambiente?.NOMBRE_AMBIENTE || 'Sin ambiente' }}</span>
+      </p>
+    </div>
+
+    <div class="firmas">
+      <nz-row nzGutter="16">
+        <nz-col nzSpan="8">
+          <h5>Recibe Conforme</h5>
+          <p>{{ reporte.persona1 || 'Sin nombre' }}</p>
+          <small>{{ reporte.cargo1 || 'Sin cargo' }}</small>
+        </nz-col>
+        <nz-col nzSpan="8">
+          <h5>Entrega Conforme</h5>
+          <p>{{ reporte.persona2 || 'Sin nombre' }}</p>
+          <small>{{ reporte.cargo2 || 'Sin cargo' }}</small>
+        </nz-col>
+        <nz-col nzSpan="8">
+          <h5>V.B. Of. Control Patrimonial</h5>
+          <p>{{ reporte.persona3 || 'Sin nombre' }}</p>
+          <small>{{ reporte.cargo3 || 'Sin cargo' }}</small>
+        </nz-col>
+      </nz-row>
+    </div>
+  </div>
+
+  <ng-template #reporteCargando>
+    <div class="estado-carga">Cargando reporte...</div>
+  </ng-template>
+</div>
+
+<div class="contenedor-scroll-tabla">
+  <nz-table
+    #basicTable
+    [nzData]="bienesFiltrados"
+    [nzPageSize]="15"
+    class="tabla-estado-conservacion"
+  >
+    <thead>
+      <tr>
+        <th rowspan="2">Codigo Patrimonial</th>
+        <th rowspan="2">Detalle Tecnico de los Bienes</th>
+        <th rowspan="2">Cantidad</th>
+        <th colspan="5">Estado de Conservacion</th>
+      </tr>
+      <tr>
+        <th>Nuevo</th>
+        <th>Bueno</th>
+        <th>Regular</th>
+        <th>Malo</th>
+        <th>RAEE/Chatarra</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let bienModalidad of basicTable.data">
+        <td>{{ getCodigoBien(bienModalidad) }}</td>
+        <td>{{ getCaracteristicasBien(bienModalidad) }}</td>
+        <td>1</td>
+        <td>{{ bienModalidad.estado === 'Nuevo' ? 'X' : '' }}</td>
+        <td>{{ bienModalidad.estado === 'Bueno' ? 'X' : '' }}</td>
+        <td>{{ bienModalidad.estado === 'Regular' ? 'X' : '' }}</td>
+        <td>{{ bienModalidad.estado === 'Malo' ? 'X' : '' }}</td>
+        <td>{{ bienModalidad.estado === 'RAEE/Chatarra' ? 'X' : '' }}</td>
+      </tr>
+    </tbody>
+  </nz-table>
+</div>

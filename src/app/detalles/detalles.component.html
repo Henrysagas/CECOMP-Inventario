@@ -1,0 +1,79 @@
+<ng-container *ngIf="bien">
+  <section class="detalles-page">
+    <div class="view-actions">
+      <button type="button" class="btn btn-light" routerLink="/bienes">Volver</button>
+    </div>
+
+    <div nz-row class="detalles-container">
+      <div nz-col nzFlex="1 1 auto" class="descripcion-column">
+        <div class="detalles-header">
+          <div>
+            <p class="eyebrow">Inventario</p>
+            <h2>Editar bien</h2>
+            <p class="subtitle">Actualiza la informaci&oacute;n principal del bien seleccionado.</p>
+          </div>
+          <span class="status-pill" [class.status-pill--editing]="isEditing">
+            <ng-container *ngIf="isEditing; else readMode">En edici&oacute;n</ng-container>
+            <ng-template #readMode>Solo lectura</ng-template>
+          </span>
+        </div>
+
+        <div class="bien-detalles-grid">
+          <div class="form-group field-highlight">
+            <label for="id">ID</label>
+            <input id="id" type="text" [(ngModel)]="bien.codigo" class="form-control" [readonly]="!isEditing">
+          </div>
+
+          <div class="form-group">
+            <label for="categoria">Categor&iacute;a</label>
+            <select id="categoria" [(ngModel)]="bien.ID_CATEGORIA" name="categoria" required [disabled]="!isEditing">
+              <option *ngFor="let categoria of categorias" [value]="categoria.id">{{ categoria.NOMBRE_CATEGORIA }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="usuarioAsignado">Usuario Asignado</label>
+            <select id="usuarioAsignado" [(ngModel)]="bien.ID_USUARIO" name="usuarioAsignado" required [disabled]="!isEditing">
+              <option *ngFor="let usuario of usuariosAdministradores" [value]="usuario.id">
+                {{ usuario.NOMBRES }} {{ usuario.APELLIDOS }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="modelo">Modelo</label>
+            <input id="modelo" type="text" [(ngModel)]="bien.MODELO" class="form-control" [readonly]="!isEditing">
+          </div>
+
+          <div class="form-group">
+            <label for="tipo">Tipo</label>
+            <input id="tipo" type="text" [(ngModel)]="bien.TIPO" class="form-control" [readonly]="!isEditing">
+          </div>
+
+          <div class="form-group">
+            <label for="color">Color</label>
+            <input id="color" type="text" [(ngModel)]="bien.COLOR" class="form-control" [readonly]="!isEditing">
+          </div>
+
+          <div class="form-group form-group--wide">
+            <label for="dimension">Dimensi&oacute;n</label>
+            <textarea id="dimension" [(ngModel)]="bien.DIMENSION" class="form-control" [readonly]="!isEditing"></textarea>
+          </div>
+
+          <div class="form-group form-group--wide">
+            <label for="serie">N&uacute;mero de Serie</label>
+            <textarea id="serie" [(ngModel)]="bien.NUMERO_SERIE" class="form-control" [readonly]="!isEditing"></textarea>
+          </div>
+        </div>
+
+        <div class="action-buttons">
+          <button class="btn btn-danger" (click)="guardarCambios()" [disabled]="isLoading" *ngIf="isEditing">
+            {{ isLoading ? 'Guardando...' : 'Guardar cambios' }}
+          </button>
+          <button class="btn btn-dark" (click)="cancelar()" *ngIf="isEditing">Cancelar</button>
+          <button class="btn btn-danger" (click)="editar()" *ngIf="!isEditing">Editar</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</ng-container>
