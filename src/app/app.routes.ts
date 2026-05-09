@@ -16,6 +16,7 @@ import { PerfilComponent } from './perfil/perfil.component';
 import { UsuariosComponent } from './usuarios/usuarios.component';
 import { HistorialMovimientosComponent } from './bienes/historial-movimientos/historial-movimientos.component';
 import { HistorialResponsablesComponent } from './bienes/historial-responsables/historial-responsables.component';
+import { LogVisitasComponent } from './log-visitas/log-visitas.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/bienes', pathMatch: 'full' },
@@ -32,6 +33,7 @@ export const routes: Routes = [
   { path: 'transferencia', component: TransferenciaComponent, canActivate: [authGuard], data: { role: 'admin' } },
   { path: 'register', component: RegisterComponent, canActivate: [authGuard], data: { role: 'admin' }},
   { path: 'usuarios', component: UsuariosComponent, canActivate: [authGuard], data: { role: 'admin' }},
+  { path: 'log-visitas', component: LogVisitasComponent, canActivate: [authGuard], data: { role: 'admin' }},
 
 
   // Rutas para usuarios no administradores (sin necesidad de rol admin)

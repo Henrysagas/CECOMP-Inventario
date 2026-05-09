@@ -12,7 +12,8 @@ import {
   LineChartOutline,
   LoginOutline,
   LogoutOutline,
-  SearchOutline
+  SearchOutline,
+  SettingOutline
 } from '@ant-design/icons-angular/icons';
 
 export const icons = [
@@ -29,5 +30,6 @@ export const icons = [
   LogoutOutline,
   MenuFoldOutline,
   MenuUnfoldOutline,
-  SearchOutline
+  SearchOutline,
+  SettingOutline
 ];

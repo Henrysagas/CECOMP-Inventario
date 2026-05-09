@@ -10,6 +10,7 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzSelectModule } from 'ng-zorro-antd/select';
+import { LogVisitaService } from '../services/log-visita.service';
 
 // Validador personalizado para contraseñas coincidentes
 function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
@@ -50,7 +51,8 @@ export class RegisterComponent {
     private fb: NonNullableFormBuilder,
     private authService: AuthService,
     private router: Router,
-    private message: NzMessageService
+    private message: NzMessageService,
+    private logVisitaService: LogVisitaService
   ) {}
 
   submitForm(): void {
@@ -58,7 +60,12 @@ export class RegisterComponent {
       const { nombres, apellidos, cargo, dni, userName, password, rol } = this.registerForm.value;
 
       this.authService.register(nombres, apellidos, userName, dni, "Activo", cargo, password, rol).subscribe({
-        next: () => {
+        next: (response) => {
+          this.logVisitaService.registrarAccion('agregar usuario', '/register', {
+            usuario_id: response?.user?.id ?? response?.id,
+            usuario: userName,
+            rol_id: rol
+          }).subscribe();
           this.message.success('Registro exitoso');
           this.router.navigate(['/login']);
         },

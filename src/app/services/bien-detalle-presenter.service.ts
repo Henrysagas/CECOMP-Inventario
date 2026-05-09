@@ -46,7 +46,7 @@ export class BienDetallePresenterService {
           categorias: this.categoriaService.getCategorias(),
           ubicaciones: this.ubicacionService.getUbicaciones(),
           movimientos: this.cargarMovimientos(bien.id),
-          usuariosAdministradores: this.usuarioService.getUsuariosConRolAdmin(),
+          usuariosAdministradores: this.usuarioService.getUsuariosAsignablesBienes(),
           historial: this.bienService.getHistorialByBienId(bien.id)
         }).pipe(
           map(({ categorias, ubicaciones, movimientos, usuariosAdministradores, historial }) => {

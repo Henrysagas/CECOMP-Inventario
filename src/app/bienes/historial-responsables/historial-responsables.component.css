@@ -1,0 +1,246 @@
+.responsables-page {
+  width: min(1100px, calc(100% - 32px));
+  margin: 24px auto;
+}
+
+.responsables-panel {
+  padding: clamp(18px, 3vw, 28px);
+  border: 3px solid #d32f2f;
+  border-radius: 8px;
+  background: #fffacd;
+  box-shadow: 0 8px 22px rgba(120, 45, 45, 0.14);
+}
+
+.responsables-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(211, 47, 47, 0.24);
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: #b71c1c;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+h2,
+.subtitle {
+  margin: 0;
+}
+
+h2 {
+  color: #d32f2f;
+  font-size: clamp(1.55rem, 1.25rem + 1vw, 2.15rem);
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.subtitle {
+  margin-top: 6px;
+  color: #514532;
+  line-height: 1.45;
+}
+
+.status-pill,
+.table-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 6px 10px;
+  border: 1px solid #d8c46b;
+  border-radius: 6px;
+  background: #ffffe0;
+  color: #7b1f2a;
+  font-weight: 800;
+}
+
+.status-pill {
+  max-width: 320px;
+}
+
+.table-pill--current {
+  border-color: #d32f2f;
+  background: #d32f2f;
+  color: #ffffff;
+}
+
+.responsable-actions {
+  margin-bottom: 18px;
+}
+
+.responsable-form {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) auto;
+  align-items: end;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid rgba(211, 47, 47, 0.22);
+  border-radius: 8px;
+  background: #ffffe0;
+}
+
+.form-group {
+  display: grid;
+  gap: 7px;
+  color: #3e382f;
+  font-weight: 750;
+}
+
+select {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #d32f2f;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #2f2b24;
+  font: inherit;
+}
+
+select:focus {
+  border-color: #b71c1c;
+  box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.16);
+  outline: none;
+}
+
+.form-buttons,
+.view-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.view-actions {
+  justify-content: flex-start;
+  margin-bottom: 14px;
+}
+
+.form-buttons {
+  justify-content: flex-end;
+}
+
+.btn {
+  min-width: 118px;
+  min-height: 42px;
+  padding: 10px 16px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 800;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.btn:disabled {
+  opacity: 0.68;
+  cursor: not-allowed;
+}
+
+.btn-danger {
+  background: #d32f2f;
+  color: #ffffff;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #b71c1c;
+}
+
+.btn-dark {
+  background: #333333;
+  color: #ffffff;
+}
+
+.btn-dark:hover:not(:disabled) {
+  background: #202020;
+}
+
+.btn-light {
+  border-color: #d32f2f;
+  background: #ffffe0;
+  color: #7b1f2a;
+}
+
+.btn-light:hover:not(:disabled) {
+  background: #fff3b0;
+}
+
+.tabla-contenedor {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table {
+  width: 100%;
+  min-width: 680px;
+  border-collapse: collapse;
+}
+
+.table th {
+  background: #d32f2f;
+  color: #ffffff;
+  padding: 11px 12px;
+  text-align: left;
+}
+
+.table td {
+  padding: 11px 12px;
+  border-bottom: 1px solid rgba(211, 47, 47, 0.16);
+  background: #fffdf0;
+  color: #3e382f;
+}
+
+.current-row td {
+  background: #ffffe0;
+  font-weight: 750;
+}
+
+.empty-state {
+  margin: 0;
+  padding: 18px;
+  border: 1px solid rgba(211, 47, 47, 0.22);
+  border-radius: 8px;
+  background: #ffffe0;
+  color: #514532;
+}
+
+@media (max-width: 720px) {
+  .responsables-page {
+    width: min(100% - 20px, 680px);
+    margin: 14px auto;
+  }
+
+  .responsables-header,
+  .responsable-form {
+    grid-template-columns: 1fr;
+  }
+
+  .responsables-header {
+    display: grid;
+  }
+
+  .status-pill {
+    max-width: none;
+    width: fit-content;
+  }
+
+  .form-buttons,
+  .view-actions {
+    justify-content: stretch;
+  }
+
+  .form-buttons .btn,
+  .view-actions .btn {
+    flex: 1 1 100%;
+  }
+}

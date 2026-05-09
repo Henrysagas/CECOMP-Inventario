@@ -68,16 +68,21 @@
         </tr>
       </thead>
       <tbody>
+        <tr *ngIf="cargandoBienes">
+          <td colspan="7" class="empty-cell">Cargando bienes...</td>
+        </tr>
+        <tr *ngIf="!cargandoBienes && errorBienes">
+          <td colspan="7" class="empty-cell state-error">{{ errorBienes }}</td>
+        </tr>
         <tr *ngFor="let bien of bienesPaginados">
           <td>{{ bien.codigo }}</td>
           <td>
-            <span *ngIf="bien.MODELO">Modelo: {{ bien.MODELO }}</span><br>
-            <span *ngIf="bien.DIMENSION">Dimensión: {{ bien.DIMENSION }}</span><br>
-            <span *ngIf="bien.NUMERO_SERIE">N° Serie: {{ bien.NUMERO_SERIE }}</span><br>
-            <span *ngIf="bien.TIPO">Tipo: {{ bien.TIPO }}</span><br>
-            <span *ngIf="bien.COLOR">Color: {{ bien.COLOR }}</span>
-            <span *ngIf="bien.DESCRIPCION">Otros: {{ bien.DESCRIPCION }}</span><br>
-
+            <ng-container *ngIf="bien.MODELO">Modelo: {{ bien.MODELO }}<br></ng-container>
+            <ng-container *ngIf="bien.DIMENSION">Dimensión: {{ bien.DIMENSION }}<br></ng-container>
+            <ng-container *ngIf="bien.NUMERO_SERIE">N° Serie: {{ bien.NUMERO_SERIE }}<br></ng-container>
+            <ng-container *ngIf="bien.TIPO">Tipo: {{ bien.TIPO }}<br></ng-container>
+            <ng-container *ngIf="bien.COLOR">Color: {{ bien.COLOR }}<br></ng-container>
+            <ng-container *ngIf="bien.DESCRIPCION">Otros: {{ bien.DESCRIPCION }}</ng-container>
           </td>
                     <td>{{ bien.categoria.NOMBRE_CATEGORIA }}</td>
           <td>{{ getUsuarioEnFecha(bien) }}</td>
@@ -86,17 +91,17 @@
           
   <td>
     <div class="action-buttons">
-      <button class="btn btn-danger" [routerLink]="['/detalles', bien.id]">Editar</button>
-      <button class="btn btn-danger" (click)="eliminarBien(bien.id)">Eliminar</button>
+      <button class="btn btn-danger" [routerLink]="['/detalles', bien.id]">Editar Caracteristicas</button>
       <button class="btn btn-danger" [routerLink]="['/historial-movimientos', bien.id]">Ver Movimientos</button>
       <button class="btn btn-danger" [routerLink]="['/historial-responsables', bien.id]">Ver Responsables</button>
+      <button class="btn btn-danger" (click)="eliminarBien(bien.id)">Eliminar</button>
 
     </div>
   </td>
 
           
         </tr>
-        <tr *ngIf="bienesFiltrados.length === 0">
+        <tr *ngIf="!cargandoBienes && !errorBienes && bienesFiltrados.length === 0">
           <td colspan="7" class="empty-cell">No se encontraron bienes con los filtros aplicados.</td>
         </tr>
       </tbody>
@@ -130,6 +135,14 @@
         <span>&nbsp;</span>
         <input type="text" class="input-field" [(ngModel)]="searchTermFuera" (input)="onSearchTermChangeFuera()" placeholder="Código o Descripción" />
       </label>
+      <label class="date-field search-field">
+        <span>&nbsp;</span>
+        <input type="text" class="input-field" [(ngModel)]="ubicacionTermFuera" (input)="onUbicacionChangeFuera()" placeholder="Oficina fuera de CECOMP" />
+      </label>
+      <label class="date-field search-field">
+        <span>&nbsp;</span>
+        <input type="text" class="input-field" [(ngModel)]="ambienteTermFuera" (input)="onAmbienteChangeFuera()" placeholder="Ambiente fuera de CECOMP" />
+      </label>
     </div>
   </div>
 
@@ -143,9 +156,16 @@
           <th>Usuario</th>
           <th>Ubicación</th>
           <th>Fecha de Salida</th>
+          <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
+        <tr *ngIf="cargandoBienes">
+          <td colspan="7" class="empty-cell">Cargando bienes...</td>
+        </tr>
+        <tr *ngIf="!cargandoBienes && errorBienes">
+          <td colspan="7" class="empty-cell state-error">{{ errorBienes }}</td>
+        </tr>
         <tr *ngFor="let bien of bienesFueraPaginados">
           <td>{{ bien.codigo }}</td>
           <td>{{ bien.DESCRIPCION }}</td>
@@ -154,11 +174,16 @@
           <td>{{ getUsuarioEnFecha(bien) }}</td>
           <td>{{ getUbicacionEnFecha(bien) }}</td>       
           <td>{{ getUltimaFechaSalida(bien) }}</td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn btn-danger" [routerLink]="['/verbien', bien.id]">Ver Bien</button>
+            </div>
+          </td>
 
          
         </tr>
-        <tr *ngIf="bienesFueraFiltrados.length === 0">
-          <td colspan="6" class="empty-cell">No se encontraron bienes fuera del inventario.</td>
+        <tr *ngIf="!cargandoBienes && !errorBienes && bienesFueraFiltrados.length === 0">
+          <td colspan="7" class="empty-cell">No se encontraron bienes fuera del inventario.</td>
         </tr>
       </tbody>
     </table>

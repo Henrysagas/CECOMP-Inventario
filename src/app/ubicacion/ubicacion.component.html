@@ -44,6 +44,7 @@
 
     <div class="button-group">
       <button [disabled]="!selectedDireccion" (click)="selectedDireccion && cargarUbicaciones(selectedDireccion)">Ver Ubicaciones</button>
+      <button [disabled]="!selectedDireccion" (click)="selectedDireccion && cambiarNombreDireccion(selectedDireccion)">Cambiar Nombre</button>
       <button class="cancel" [disabled]="!selectedDireccion" (click)="selectedDireccion && eliminarDireccion(selectedDireccion.id)">Eliminar Direccion</button>
     </div>
   </section>
@@ -79,6 +80,7 @@
 
     <div class="button-group">
       <button [disabled]="!selectedUbicacion" (click)="selectedUbicacion && verAmbientes(selectedUbicacion)">Ver Ambientes</button>
+      <button [disabled]="!selectedUbicacion" (click)="selectedUbicacion && cambiarNombreUbicacion(selectedUbicacion)">Cambiar Nombre</button>
       <button class="cancel" [disabled]="!selectedUbicacion" (click)="selectedUbicacion && eliminarUbicacion(selectedUbicacion.ID_UBICACION)">Eliminar Ubicacion</button>
     </div>
   </section>
@@ -114,7 +116,7 @@
     </div>
 
     <div class="button-group">
-      <button [disabled]="!selectedAmbiente" (click)="selectedAmbiente && editarAmbiente(selectedAmbiente.ID_AMBIENTE)">Editar Ambiente</button>
+      <button [disabled]="!selectedAmbiente" (click)="selectedAmbiente && cambiarNombreAmbiente(selectedAmbiente)">Cambiar Nombre</button>
       <button class="cancel" [disabled]="!selectedAmbiente" (click)="selectedAmbiente && eliminarAmbiente(selectedAmbiente.ID_AMBIENTE)">Eliminar Ambiente</button>
     </div>
   </section>

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { catchError, forkJoin, map, of } from 'rxjs';
 import { ModalidadService } from '../services/modalidad.service';
 import { Modalidad } from '../models/modalidad';
 import { NzTableModule } from 'ng-zorro-antd/table';
@@ -24,6 +25,9 @@ import { Bien } from '../models/bien';
 import { BienService } from '../services/bien.service';
 import { Detalle } from '../models/detalle';
 import { NzPaginationModule } from 'ng-zorro-antd/pagination';
+import { TipoModalidad } from '../models/tipo-modalidad';
+import { TipoModalidadService } from '../services/tipo-modalidad.service';
+import { LogVisitaService } from '../services/log-visita.service';
 
 interface ConsultaGenerada {
   id: number;
@@ -58,6 +62,13 @@ export class ReporteComponent implements OnInit {
   transferReportData: Modalidad[] = [];
   filteredTransferReportData: Modalidad[] = [];
   dateRangeTransferencia: Date[] | null = null;
+  selectedTipoTransferencia: number | null = null;
+  transferenciaSearchTerm = '';
+  cargandoTransferencias = false;
+  errorTransferencias = '';
+  cargandoConsulta = false;
+  errorConsulta = '';
+  tipoModalidades: TipoModalidad[] = [];
 
   categorias: Categoria[] = [];
   selectedCategoria: Categoria | null = null;
@@ -83,7 +94,9 @@ export class ReporteComponent implements OnInit {
     private direccionesService: DireccionesService,
     private ubicacionService: UbicacionService,
     private bienService: BienService,
-    private ambienteService: AmbienteService
+    private ambienteService: AmbienteService,
+    private tipoModalidadService: TipoModalidadService,
+    private logVisitaService: LogVisitaService
   ) {}
 
   ngOnInit(): void {
@@ -93,17 +106,21 @@ export class ReporteComponent implements OnInit {
     this.loadUbicaciones(); 
     this.loadAmbientes(); 
     this.loadCategorias(); 
+    this.loadTipoModalidades();
   }
   buscarBienesPorUbicacion(registrarConsulta: boolean = false): void {
     if (!this.selectedAmbienteId) {
       this.bienesFiltrados = [];
       this.bienesFiltradosPorCategoria = [];
+      this.errorConsulta = 'Selecciona una ubicacion y un ambiente para consultar bienes.';
       return;
     }
   
     const fechaConsulta = this.normalizeDate(this.consultaDate) || new Date();
+    this.cargandoConsulta = true;
+    this.errorConsulta = '';
   
-    this.bienService.getBienPorAmbiente(this.selectedAmbienteId!, this.formatDate(fechaConsulta)).subscribe(
+    this.bienService.getBienes().subscribe(
       (bienes: Bien[]) => {
         const bienesNormalizados = bienes.map(bien => new Bien(
           bien.id,
@@ -122,14 +139,24 @@ export class ReporteComponent implements OnInit {
           bien.usuario || 'Sin Usuario'
         ));
 
-        this.bienesFiltrados = bienesNormalizados;
+        this.bienesFiltrados = this.filtrarBienesPorAmbienteEnFecha(
+          bienesNormalizados,
+          this.selectedAmbienteId!,
+          fechaConsulta
+        );
 
         this.aplicarFiltroCategoria(); // Aplica el filtro luego de cargar los bienes
         if (registrarConsulta) {
           this.registrarConsultaGenerada();
+          this.registrarLogConsultaReporte();
         }
+        this.cargandoConsulta = false;
       },
-      error => console.error('Error al obtener bienes:', error)
+      error => {
+        console.error('Error al obtener bienes:', error);
+        this.errorConsulta = 'No se pudieron cargar los bienes de la consulta.';
+        this.cargandoConsulta = false;
+      }
     );
   }
   aplicarFiltroCategoria(): void {
@@ -161,7 +188,10 @@ export class ReporteComponent implements OnInit {
 
   loadDirecciones(): void {
     this.direccionesService.getDirecciones().subscribe(
-      (direcciones: DireccionModel[]) => this.direcciones = direcciones,
+      (direcciones: DireccionModel[]) => {
+        this.direcciones = direcciones;
+        this.preseleccionarConsultaCecomp();
+      },
       error => console.error('Error al cargar direcciones:', error)
     );
   }
@@ -169,7 +199,10 @@ export class ReporteComponent implements OnInit {
 
   loadUbicaciones(): void {
     this.ubicacionService.getUbicaciones().subscribe(
-      (ubicaciones: Ubicacion[]) => this.ubicaciones = ubicaciones,
+      (ubicaciones: Ubicacion[]) => {
+        this.ubicaciones = ubicaciones;
+        this.preseleccionarConsultaCecomp();
+      },
       error => console.error('Error al cargar ubicaciones:', error)
     );
   }
@@ -178,6 +211,39 @@ export class ReporteComponent implements OnInit {
     this.ambienteService.getAmbientes().subscribe(
       (ambientes: Ambiente[]) => this.ambientes = ambientes,
       error => console.error('Error al cargar ambientes:', error)
+    );
+  }
+
+  private preseleccionarConsultaCecomp(): void {
+    if (this.selectedDireccionId || this.direcciones.length === 0) {
+      return;
+    }
+
+    const campusUno = this.direcciones.find(direccion => this.normalizarTexto(direccion.nombre).includes('campus 1'));
+    if (!campusUno) {
+      return;
+    }
+
+    this.selectedDireccionId = campusUno.id;
+    this.ubicacionService.getUbicacionesByDireccion(campusUno.id).subscribe(
+      (ubicaciones: Ubicacion[]) => {
+        this.ubicacionesFiltradas = ubicaciones;
+        const cecomp = ubicaciones.find(ubicacion => {
+          const texto = this.normalizarTexto(`${ubicacion.NOMBRE || ''} ${ubicacion.CODIGO || ''}`);
+          return texto.includes('cecomp');
+        });
+
+        if (!cecomp) {
+          return;
+        }
+
+        this.selectedUbicacionId = cecomp.ID_UBICACION;
+        this.ambienteService.getAmbientesByUbicacion(cecomp.ID_UBICACION).subscribe(
+          (ambientes: Ambiente[]) => this.ambientesFiltrados = ambientes,
+          error => console.error('Error al cargar ambientes:', error)
+        );
+      },
+      error => console.error('Error al cargar ubicaciones:', error)
     );
   }
   onDireccionChange(): void {
@@ -198,18 +264,46 @@ export class ReporteComponent implements OnInit {
 
   filterReportsByDate(tipo: string): void {
     if (tipo === 'transferencia') {
-      if (!this.dateRangeTransferencia || this.dateRangeTransferencia.length !== 2) {
-        this.filteredTransferReportData = this.transferReportData;
-        return;
-      }
+      this.aplicarFiltrosTransferencia();
+    }
+  }
+
+  aplicarFiltrosTransferencia(): void {
+    let reportes = [...this.transferReportData];
+    const termino = this.normalizarTexto(this.transferenciaSearchTerm || '');
+
+    if (this.dateRangeTransferencia && this.dateRangeTransferencia.length === 2) {
       const [startDate, endDate] = this.dateRangeTransferencia;
       const start = this.startOfDay(startDate);
       const end = this.endOfDay(endDate);
-      this.filteredTransferReportData = this.transferReportData.filter((reporte) => {
+      reportes = reportes.filter((reporte) => {
         const reportDate = new Date(reporte.fecha);
         return reportDate >= start && reportDate <= end;
       });
     }
+
+    if (this.selectedTipoTransferencia) {
+      reportes = reportes.filter(reporte => reporte.ID_TIPO_MODALIDAD === this.selectedTipoTransferencia);
+    }
+
+    if (termino) {
+      reportes = reportes.filter(reporte => {
+        const fecha = new Date(reporte.fecha);
+        const textoReporte = this.normalizarTexto([
+          reporte.nombre,
+          reporte.documento_autorizacion,
+          reporte.motivo_traslado,
+          this.getTipoModalidadNombre(reporte.ID_TIPO_MODALIDAD),
+          reporte.ID_TIPO_MODALIDAD,
+          Number.isNaN(fecha.getTime()) ? reporte.fecha : this.formatDate(fecha),
+          Number.isNaN(fecha.getTime()) ? '' : fecha.toLocaleDateString('es-PE')
+        ].join(' '));
+
+        return textoReporte.includes(termino);
+      });
+    }
+
+    this.filteredTransferReportData = reportes;
   }
 
   verReporte(reporte: Modalidad) {
@@ -217,20 +311,89 @@ export class ReporteComponent implements OnInit {
   }
 
   loadTransferReports(): void {
+    this.cargandoTransferencias = true;
+    this.errorTransferencias = '';
     this.modalidadService.getModalidades().subscribe(
       (data: Modalidad[]) => {
-        this.transferReportData = data.map(reporte => ({
+        const reportes = data.map(reporte => ({
           ...reporte,
           bienes: Array.isArray(reporte.bienes) ? reporte.bienes : []
         }));
-        this.filteredTransferReportData = this.transferReportData;
+
+        if (reportes.length === 0) {
+          this.transferReportData = [];
+          this.aplicarFiltrosTransferencia();
+          this.cargandoTransferencias = false;
+          return;
+        }
+
+        forkJoin(
+          reportes.map(reporte =>
+            this.modalidadService.getBienesPorModalidad(reporte.id || 0).pipe(
+              map(bienes => ({
+                ...reporte,
+                bienes: Array.isArray(bienes) ? bienes : []
+              })),
+              catchError(error => {
+                console.error('Error al cargar bienes de la modalidad:', error);
+                return of(reporte);
+              })
+            )
+          )
+        ).subscribe((reportesConBienes: Modalidad[]) => {
+          this.transferReportData = reportesConBienes;
+          this.aplicarFiltrosTransferencia();
+          this.cargandoTransferencias = false;
+        });
       },
-      error => console.error('Error al cargar reportes:', error)
+      error => {
+        console.error('Error al cargar reportes:', error);
+        this.errorTransferencias = 'No se pudieron cargar los reportes de transferencia.';
+        this.cargandoTransferencias = false;
+      }
+    );
+  }
+
+  loadTipoModalidades(): void {
+    this.tipoModalidadService.getTiposModalidad().subscribe(
+      (data: TipoModalidad[]) => this.tipoModalidades = data,
+      error => console.error('Error al cargar tipos de modalidad:', error)
     );
   }
 
   getCantidadBienes(reporte: Modalidad): number {
     return Array.isArray(reporte.bienes) ? reporte.bienes.length : 0;
+  }
+
+  getTipoModalidadNombre(tipoId: number | null | undefined): string {
+    if (!tipoId) {
+      return 'No registrado';
+    }
+
+    return this.tipoModalidades.find(tipo => tipo.id === tipoId)?.nombre || `Tipo ${tipoId}`;
+  }
+
+  getCantidadPorTipo(tipo: 'interna' | 'externa' | 'patrimonio'): number {
+    return this.filteredTransferReportData.filter(reporte => this.getCategoriaTipoTransferencia(reporte) === tipo).length;
+  }
+
+  private getCategoriaTipoTransferencia(reporte: Modalidad): 'interna' | 'externa' | 'patrimonio' | 'otro' {
+    const tipoId = reporte.ID_TIPO_MODALIDAD;
+    const nombre = this.getTipoModalidadNombre(tipoId).toLowerCase();
+
+    if (nombre.includes('interna') || tipoId === 2) {
+      return 'interna';
+    }
+
+    if (nombre.includes('externa') || tipoId === 3) {
+      return 'externa';
+    }
+
+    if (nombre.includes('patrimonio') || tipoId === 4) {
+      return 'patrimonio';
+    }
+
+    return 'otro';
   }
 
   loadCategorias(): void {
@@ -259,6 +422,13 @@ export class ReporteComponent implements OnInit {
     if (bienes.length === 0) {
       return;
     }
+
+    this.logVisitaService.registrarAccionLimitada('descargar pdf de reporte de consulta', '/reportes', {
+      consulta_id: consulta?.id ?? this.consultaSeleccionadaId,
+      ambiente: consulta?.ambiente || this.getAmbienteNombre(),
+      categoria: consulta?.categoria || this.getCategoriaNombre(),
+      total_bienes: bienes.length
+    }, 60000).subscribe();
 
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     const logo = await this.loadImage('cecomp.png');
@@ -357,6 +527,17 @@ export class ReporteComponent implements OnInit {
     this.consultasGeneradas = [consulta, ...this.consultasGeneradas].slice(0, 10);
   }
 
+  private registrarLogConsultaReporte(): void {
+    this.logVisitaService.registrarAccionLimitada('consulta de reporte', '/reportes', {
+      direccion: this.getDireccionNombre(),
+      ubicacion: this.getUbicacionNombre(),
+      ambiente: this.getAmbienteNombre(),
+      categoria: this.getCategoriaNombre(),
+      fecha_consulta: this.normalizeDate(this.consultaDate)?.toLocaleDateString('es-PE') || 'Sin fecha',
+      total_bienes: this.bienesFiltradosPorCategoria.length
+    }, 60000).subscribe();
+  }
+
   private drawPdfField(doc: jsPDF, label: string, value: string, x: number, y: number, width: number): void {
     doc.setFont('times', 'bold');
     doc.setFontSize(8.8);
@@ -406,24 +587,31 @@ export class ReporteComponent implements OnInit {
     return Number.isNaN(parsed.getTime()) ? null : parsed;
   }
 
+  private normalizarTexto(value: string): string {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+  }
+
   private filtrarBienesPorAmbienteEnFecha(bienes: Bien[], idAmbiente: number, fecha: Date): Bien[] {
     const fechaObjetivo = this.endOfDay(fecha).getTime();
 
     return bienes
       .map(bien => {
         const movimientos = [...(bien.movimientos || [])].sort((a, b) =>
-          new Date(a.FECHA_MODIFICACION).getTime() - new Date(b.FECHA_MODIFICACION).getTime()
+          this.getMovimientoTime(a.FECHA_MODIFICACION) - this.getMovimientoTime(b.FECHA_MODIFICACION)
         );
 
         if (movimientos.length === 0) {
-          return bien;
+          return null;
         }
 
         const movimientoVigente = movimientos
-          .filter(movimiento => new Date(movimiento.FECHA_MODIFICACION).getTime() <= fechaObjetivo)
+          .filter(movimiento => this.getMovimientoTime(movimiento.FECHA_MODIFICACION) <= fechaObjetivo)
           .pop();
 
-        if (!movimientoVigente || movimientoVigente.ID_AMBIENTE !== idAmbiente) {
+        if (!movimientoVigente || Number(movimientoVigente.ID_AMBIENTE) !== Number(idAmbiente)) {
           return null;
         }
 
@@ -445,6 +633,11 @@ export class ReporteComponent implements OnInit {
         );
       })
       .filter((bien): bien is Bien => !!bien);
+  }
+
+  private getMovimientoTime(fecha: string): number {
+    const parsed = this.normalizeDate(fecha);
+    return parsed ? parsed.getTime() : 0;
   }
 
   private getDescripcionBien(bien: Bien): string {

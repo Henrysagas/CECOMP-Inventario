@@ -8,10 +8,15 @@ import { catchError } from 'rxjs/operators';
 })
 export class LogVisitaService {
   private apiUrl = 'http://localhost:8000/api/log-visitas';
+  private ultimosRegistros = new Map<string, number>();
 
   constructor(private http: HttpClient) {}
 
-  registrarVisita(ruta: string, accion = 'visita'): Observable<any> {
+  registrarVisita(ruta: string, accion = 'visita', detalles: Record<string, unknown> = {}): Observable<any> {
+    return this.registrarAccion(accion, ruta, detalles);
+  }
+
+  registrarAccion(accion: string, ruta: string = this.obtenerRutaActual(), detalles: Record<string, unknown> = {}): Observable<any> {
     if (typeof window === 'undefined') {
       return of(null);
     }
@@ -29,7 +34,8 @@ export class LogVisitaService {
         accion,
         detalles: {
           titulo: document.title,
-          url: window.location.href
+          url: window.location.href,
+          ...detalles
         }
       })
       .pipe(
@@ -42,5 +48,27 @@ export class LogVisitaService {
 
   obtenerVisitas(params: Record<string, string | number> = {}): Observable<any> {
     return this.http.get(this.apiUrl, { params: params as any });
+  }
+
+  registrarAccionLimitada(
+    accion: string,
+    ruta: string = this.obtenerRutaActual(),
+    detalles: Record<string, unknown> = {},
+    intervaloMs = 60000
+  ): Observable<any> {
+    const clave = `${accion}|${ruta}|${JSON.stringify(detalles)}`;
+    const ahora = Date.now();
+    const ultimoRegistro = this.ultimosRegistros.get(clave) || 0;
+
+    if (ahora - ultimoRegistro < intervaloMs) {
+      return of(null);
+    }
+
+    this.ultimosRegistros.set(clave, ahora);
+    return this.registrarAccion(accion, ruta, detalles);
+  }
+
+  private obtenerRutaActual(): string {
+    return typeof window !== 'undefined' ? window.location.pathname : '';
   }
 }

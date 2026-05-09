@@ -13,7 +13,7 @@ export class AmbienteService {
 
   // Obtener todos los ambientes
   getAmbientes(): Observable<Ambiente[]> {
-    return this.http.get<Ambiente[]>(this.apiUrl);
+    return this.http.get<Ambiente[]>('http://localhost:8000/api/ambientes');
   }
 
 // Obtener un ambiente específico
@@ -34,8 +34,8 @@ getAmbiente(idAmbiente: number): Observable<Ambiente> {
   
 
   // Actualizar un ambiente existente
-  updateAmbiente(idAmbiente: number, ambiente: Ambiente): Observable<Ambiente> {
-    return this.http.put<Ambiente>(`${this.apiUrl}/${idAmbiente}`, ambiente);
+  updateAmbiente(idAmbiente: number, ambiente: Partial<Ambiente> & { nombre?: string }): Observable<Ambiente> {
+    return this.http.put<Ambiente>(`http://localhost:8000/api/ambientes/${idAmbiente}`, ambiente);
   }
 
   // Eliminar un ambiente

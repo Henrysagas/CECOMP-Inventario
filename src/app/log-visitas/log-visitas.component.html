@@ -1,0 +1,111 @@
+<div class="log-visitas-container">
+  <h2>LOG DE VISITAS</h2>
+
+  <div class="audit-toolbar">
+    <div class="audit-field search-field">
+      <label>Buscar</label>
+      <input
+        nz-input
+        [(ngModel)]="terminoBusqueda"
+        placeholder="Usuario, ruta, acci&oacute;n, IP o navegador" />
+    </div>
+
+    <div class="audit-field">
+      <label>Acci&oacute;n</label>
+      <nz-select [(ngModel)]="accionFiltro">
+        <nz-option nzValue="todas" nzLabel="Todas"></nz-option>
+        <nz-option
+          *ngFor="let accion of accionesDisponibles"
+          [nzValue]="accion"
+          [nzLabel]="accion">
+        </nz-option>
+      </nz-select>
+    </div>
+
+    <div class="audit-field">
+      <label>Desde</label>
+      <input nz-input type="date" [(ngModel)]="fechaDesde" />
+    </div>
+
+    <div class="audit-field">
+      <label>Hasta</label>
+      <input nz-input type="date" [(ngModel)]="fechaHasta" />
+    </div>
+
+    <button type="button" nz-button nzType="default" (click)="limpiarFiltros()">Limpiar</button>
+    <button type="button" nz-button nzType="primary" [nzLoading]="cargando" (click)="cargarVisitas()">Actualizar</button>
+  </div>
+
+  <div class="audit-summary">
+    Mostrando {{ visitasFiltradas.length }} de {{ visitas.length }} registros.
+  </div>
+
+  <div class="audit-state state-error" *ngIf="errorVisitas">
+    {{ errorVisitas }}
+  </div>
+
+  <div class="audit-layout" [class.detail-open]="visitaSeleccionada">
+    <nz-table
+      [nzData]="visitasFiltradas"
+      [nzBordered]="true"
+      [nzSize]="'middle'"
+      [nzLoading]="cargando"
+      [nzScroll]="{ x: '100%', y: '520px' }"
+      class="tabla-contenedor">
+      <thead>
+        <tr>
+          <th nzWidth="170px">Fecha</th>
+          <th nzWidth="190px">Usuario</th>
+          <th nzWidth="110px">Acci&oacute;n</th>
+          <th nzWidth="280px">Ruta</th>
+          <th nzWidth="95px">M&eacute;todo</th>
+          <th nzWidth="130px">IP</th>
+          <th nzWidth="150px">Auditor&iacute;a</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let visita of visitasFiltradas">
+          <td>{{ formatearFecha(visita.created_at) }}</td>
+          <td>{{ obtenerNombreUsuario(visita) }}</td>
+          <td>{{ visita.accion }}</td>
+          <td class="ruta-cell">{{ visita.ruta }}</td>
+          <td>{{ visita.metodo || 'N/D' }}</td>
+          <td>{{ visita.ip || 'N/D' }}</td>
+          <td>
+            <button type="button" nz-button nzType="primary" (click)="seleccionarVisita(visita)">Ver detalle</button>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+
+    <aside class="audit-detail" *ngIf="visitaSeleccionada">
+      <h3>Detalle de auditor&iacute;a</h3>
+
+      <nz-descriptions nzBordered [nzColumn]="1" nzSize="small">
+        <nz-descriptions-item nzTitle="Usuario">
+          {{ obtenerNombreUsuario(visitaSeleccionada) }}
+        </nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Fecha">
+          {{ formatearFecha(visitaSeleccionada.created_at) }}
+        </nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Acci&oacute;n">
+          {{ visitaSeleccionada.accion }}
+        </nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Ruta">
+          {{ visitaSeleccionada.ruta }}
+        </nz-descriptions-item>
+        <nz-descriptions-item nzTitle="M&eacute;todo">
+          {{ visitaSeleccionada.metodo || 'N/D' }}
+        </nz-descriptions-item>
+        <nz-descriptions-item nzTitle="IP">
+          {{ visitaSeleccionada.ip || 'N/D' }}
+        </nz-descriptions-item>
+        <nz-descriptions-item nzTitle="Navegador">
+          {{ visitaSeleccionada.user_agent || 'N/D' }}
+        </nz-descriptions-item>
+      </nz-descriptions>
+
+      <pre>{{ formatearDetalles(visitaSeleccionada.detalles) }}</pre>
+    </aside>
+  </div>
+</div>

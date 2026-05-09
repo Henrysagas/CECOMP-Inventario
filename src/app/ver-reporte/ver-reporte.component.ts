@@ -15,6 +15,10 @@ import { AmbienteService } from '../services/ambiente.service';
 import { BienModalidadService } from '../services/bien-modalidad.service';
 import { ModalidadService } from '../services/modalidad.service';
 import { UbicacionService } from '../services/ubicacion.service';
+import { LogVisitaService } from '../services/log-visita.service';
+import { DocumentoConfig, DocumentoConfigService } from '../services/documento-config.service';
+import { CategoriaService } from '../services/categoria.service';
+import { Categoria } from '../models/categoria';
 
 @Component({
   selector: 'app-ver-reporte',
@@ -28,11 +32,13 @@ export class VerReporteComponent implements OnInit {
   ubicacion?: Ubicacion;
   ambiente?: Ambiente;
   bienesFiltrados: BienModalidad[] = [];
+  categorias: Categoria[] = [];
 
   private readonly pdfMargin = 10;
   private readonly pdfPageWidth = 210;
   private readonly pdfPageHeight = 297;
   private readonly pdfLineColor: [number, number, number] = [35, 35, 35];
+  private documentoConfig: DocumentoConfig;
 
   constructor(
     private modalidadService: ModalidadService,
@@ -40,11 +46,24 @@ export class VerReporteComponent implements OnInit {
     private ambienteService: AmbienteService,
     private bienModalidadService: BienModalidadService,
     private route: ActivatedRoute,
-    private router: Router
-  ) {}
+    private router: Router,
+    private logVisitaService: LogVisitaService,
+    private documentoConfigService: DocumentoConfigService,
+    private categoriaService: CategoriaService
+  ) {
+    this.documentoConfig = this.documentoConfigService.getConfig();
+  }
 
   ngOnInit(): void {
+    this.loadCategorias();
     this.loadReporte();
+  }
+
+  loadCategorias(): void {
+    this.categoriaService.getCategorias().subscribe(
+      categorias => this.categorias = categorias,
+      error => console.error('Error al cargar categorias:', error)
+    );
   }
 
   loadReporte(): void {
@@ -120,6 +139,16 @@ export class VerReporteComponent implements OnInit {
       return;
     }
 
+    if (this.esReporteInterno()) {
+      await this.generarPDFReporteInterno();
+      return;
+    }
+
+    this.logVisitaService.registrarAccionLimitada('descargar pdf de reporte de transferencia', `/ver-reporte/${this.reporte.id}`, {
+      reporte_id: this.reporte.id,
+      cantidad_bienes: this.bienesFiltrados.length
+    }, 60000).subscribe();
+
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     const logo = await this.loadImage('cecomp.png');
     doc.setFont('times', 'normal');
@@ -166,11 +195,91 @@ export class VerReporteComponent implements OnInit {
       columnStyles: this.getPdfColumnStyles()
     });
 
-    const finalY = this.extendTableToSignatures(doc, (doc as any).lastAutoTable?.finalY ?? 90);
-    this.drawSignaturesAtDocumentEnd(doc, finalY);
+    this.drawSignaturesAtDocumentEnd(doc, (doc as any).lastAutoTable?.finalY ?? 90);
     this.addPageNumbers(doc);
 
     doc.save(`reporte-${this.reporte.id ?? 'bienes'}.pdf`);
+  }
+
+  esReporteInterno(): boolean {
+    return this.reporte?.ID_TIPO_MODALIDAD === 2;
+  }
+
+  private async generarPDFReporteInterno(): Promise<void> {
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const logo = await this.loadImage('cecomp.png');
+    const fecha = this.formatDate(this.reporte?.fecha);
+    const ubicacion = this.ubicacion?.NOMBRE || this.documentoConfig.ubicacionCecomp;
+    const ambiente = this.ambiente?.NOMBRE_AMBIENTE || 'Sin ambiente';
+
+    this.logVisitaService.registrarAccionLimitada('descargar pdf de reporte interno', `/ver-reporte/${this.reporte?.id}`, {
+      reporte_id: this.reporte?.id,
+      cantidad_bienes: this.bienesFiltrados.length
+    }, 60000).subscribe();
+
+    if (logo) {
+      doc.addImage(logo, 'PNG', 16, 15, 30, 15);
+    }
+
+    doc.setFont('times', 'normal');
+    doc.setFontSize(9);
+    doc.text(this.documentoConfig.institucion, 52, 18);
+    doc.text(this.documentoConfig.dependencia, 52, 24);
+    doc.text(this.documentoConfig.oficina, 52, 30);
+
+    doc.setFont('times', 'bold');
+    doc.setFontSize(13);
+    doc.text(this.documentoConfig.tituloMovimientoInterno, 105, 44, { align: 'center' });
+
+    doc.setFont('times', 'normal');
+    this.drawConsultaPdfField(doc, 'Ubicacion:', ubicacion, 16, 55, 68);
+    this.drawConsultaPdfField(doc, 'Ambiente:', ambiente, 16, 65, 68);
+    this.drawConsultaPdfField(doc, 'Categoria:', 'Todas', 112, 55, 64);
+    this.drawConsultaPdfField(doc, 'Fecha:', fecha, 112, 65, 64);
+    this.drawConsultaPdfField(doc, 'Total:', String(this.bienesFiltrados.length), 112, 75, 64);
+
+    autoTable(doc, {
+      startY: 92,
+      head: [['Codigo Patrimonial', 'Categoria', 'Detalle Tecnico de los Bienes', 'Estado']],
+      body: this.bienesFiltrados.map(bienModalidad => [
+        String(bienModalidad.bien?.codigo || ''),
+        this.wrapConsultaPdfCellText(doc, this.getCategoriaBienModalidad(bienModalidad), 18),
+        this.wrapConsultaPdfCellText(doc, this.getCaracteristicasBienPdf(bienModalidad), 98),
+        bienModalidad.estado || 'Sin Estado'
+      ]),
+      theme: 'grid',
+      styles: {
+        font: 'times',
+        fontSize: 8.2,
+        cellPadding: 2.2,
+        lineColor: [60, 60, 60],
+        lineWidth: 0.15,
+        overflow: 'linebreak',
+        valign: 'middle'
+      },
+      headStyles: {
+        fillColor: [211, 47, 47],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        halign: 'center'
+      },
+      columnStyles: {
+        0: { cellWidth: 26, halign: 'center' },
+        1: { cellWidth: 22, overflow: 'linebreak' },
+        2: { cellWidth: 108, overflow: 'linebreak' },
+        3: { cellWidth: 22, halign: 'center' }
+      },
+      margin: { left: 16, right: 16, bottom: 16 }
+    });
+
+    const totalPages = doc.getNumberOfPages();
+    for (let page = 1; page <= totalPages; page++) {
+      doc.setPage(page);
+      doc.setFontSize(8);
+      doc.text(`Pagina ${page} de ${totalPages}`, 194, 291, { align: 'right' });
+    }
+
+    doc.save(`reporte-interno-${this.reporte?.id ?? 'bienes'}.pdf`);
   }
 
   private getPdfRows(doc: jsPDF): string[][] {
@@ -226,6 +335,13 @@ export class VerReporteComponent implements OnInit {
     ].filter(Boolean);
 
     return this.normalizePdfText(partes.join(' | ') || 'Sin caracteristicas');
+  }
+
+  private getCategoriaBienModalidad(bienModalidad: BienModalidad): string {
+    const bien = bienModalidad.bien;
+    return bien?.categoria?.NOMBRE_CATEGORIA ||
+      this.categorias.find(categoria => categoria.id === bien?.ID_CATEGORIA)?.NOMBRE_CATEGORIA ||
+      'Sin categoria';
   }
 
   private normalizePdfText(value: string): string {
@@ -348,6 +464,20 @@ export class VerReporteComponent implements OnInit {
     doc.text(text.slice(0, 1), x + 1.5, y + 4.8);
   }
 
+  private drawConsultaPdfField(doc: jsPDF, label: string, value: string, x: number, y: number, width: number): void {
+    doc.setFont('times', 'bold');
+    doc.setFontSize(8.8);
+    doc.text(label, x, y + 4.5);
+    doc.rect(x + 26, y, width, 8);
+    doc.setFont('times', 'normal');
+    doc.setFontSize(8.8);
+    doc.text(doc.splitTextToSize(value || '-', width - 4).slice(0, 1), x + 28, y + 5.3);
+  }
+
+  private wrapConsultaPdfCellText(doc: jsPDF, value: string, width: number): string {
+    return doc.splitTextToSize((value || '').replace(/\s+/g, ' ').trim(), width).join('\n');
+  }
+
   private drawMotivoOptions(doc: jsPDF, x: number, y: number): void {
     const motivos = [
       ['a. Prestamo', 'prestamo'],
@@ -386,11 +516,6 @@ export class VerReporteComponent implements OnInit {
 
     if (tableFinalY + minimumGap > bottomY) {
       doc.addPage('a4', 'portrait');
-      const emptyRowHeight = 9.5;
-      const targetY = bottomY - minimumGap;
-      const startY = 12;
-      const emptyRows = Math.floor((targetY - startY) / emptyRowHeight);
-      this.drawEmptyTableRows(doc, startY, emptyRows, emptyRowHeight);
     }
 
     const y = bottomY;

@@ -15,6 +15,8 @@ import { Ubicacion } from '../models/ubicacion';
 import { Ambiente } from '../models/ambiente';
 import { FormsModule } from '@angular/forms';  
 import { CommonModule } from '@angular/common';
+import { NzMessageModule, NzMessageService } from 'ng-zorro-antd/message';
+import { LogVisitaService } from '../services/log-visita.service';
 
 @Component({
   selector: 'app-nuevo-bien',
@@ -23,7 +25,8 @@ import { CommonModule } from '@angular/common';
   standalone: true, 
   imports: [
     FormsModule, 
-    CommonModule
+    CommonModule,
+    NzMessageModule
   ]
 })
 export class AgregarBienComponent implements OnInit {
@@ -47,7 +50,9 @@ export class AgregarBienComponent implements OnInit {
     private ubicacionService: UbicacionService,  
     private ambienteService: AmbienteService,  
     private detalleService: DetalleService, 
-    private router: Router 
+    private router: Router,
+    private logVisitaService: LogVisitaService,
+    private message: NzMessageService
   ) {}
 
   ngOnInit(): void {
@@ -57,13 +62,17 @@ export class AgregarBienComponent implements OnInit {
   }
 
   cargarUsuariosAdministradores(): void {
-    this.usuarioService.getUsuariosConRolAdmin().subscribe(
+    this.usuarioService.getUsuariosAsignablesBienes().subscribe(
       (usuarios: Usuario[]) => {
-        console.log('Usuarios Administradores:', usuarios);  // Verifica si solo son administradores
         this.usuariosAdministradores = usuarios;
+        const usuarioSinUsuario = usuarios.find(usuario => this.usuarioService.esUsuarioSinUsuario(usuario));
+
+        if (usuarioSinUsuario) {
+          this.nuevoBien.ID_USUARIO = usuarioSinUsuario.id;
+        }
       },
       error => {
-        console.error('Error al cargar administradores:', error);
+        console.error('Error al cargar usuarios asignables:', error);
       }
     );
   }
@@ -111,10 +120,8 @@ export class AgregarBienComponent implements OnInit {
   }
 
   guardarBien(): void {
-    console.log('Datos a enviar:', this.nuevoBien);  // Para ver los datos que estás enviando
-  
     if (!this.selectedAmbienteId || !this.selectedEstado) {
-      alert('Por favor completa los campos obligatorios.');
+      this.message.warning('Por favor completa los campos obligatorios.');
       return;
     }
     
@@ -128,14 +135,21 @@ export class AgregarBienComponent implements OnInit {
   
     this.bienService.createBienConMovimiento(this.nuevoBien, movimiento).subscribe(
       (response) => {
-        console.log('Bien y movimiento guardados con éxito:', response);
-        alert('Bien y movimiento inicial guardados con éxito.');
+        this.logVisitaService.registrarAccion('agregar bien', '/nuevo-bien', {
+          bien_id: response?.id ?? response?.ID ?? this.nuevoBien.id,
+          codigo: this.nuevoBien.codigo,
+          categoria_id: this.nuevoBien.ID_CATEGORIA,
+          usuario_id: this.nuevoBien.ID_USUARIO,
+          ambiente_id: this.selectedAmbienteId,
+          estado: this.selectedEstado
+        }).subscribe();
+        this.message.success('Bien y movimiento inicial guardados correctamente.');
         this.resetForm();
         this.router.navigate(['/bienes']);
       },
       (error) => {
-        console.error('Error al guardar el bien y el movimiento:', error);  // Log detallado del error
-        alert('Hubo un problema al guardar el bien. Intenta nuevamente.');
+        console.error('Error al guardar el bien y el movimiento:', error);
+        this.message.error('Hubo un problema al guardar el bien. Intenta nuevamente.');
       }
     );
   }
@@ -145,6 +159,12 @@ export class AgregarBienComponent implements OnInit {
   resetForm(): void {
     const categoriaPredeterminada: Categoria = new Categoria(0, 'Defecto'); 
     this.nuevoBien =  new Bien(0,0, 0, 0, '', '', '', '', '', '', '', this.categoriaPredeterminada, [], '');
+    const usuarioSinUsuario = this.usuariosAdministradores.find(usuario => this.usuarioService.esUsuarioSinUsuario(usuario));
+
+    if (usuarioSinUsuario) {
+      this.nuevoBien.ID_USUARIO = usuarioSinUsuario.id;
+    }
+
     this.selectedUbicacionId = null;
     this.selectedAmbienteId = null;
     this.selectedEstado = null;

@@ -39,18 +39,79 @@ export class AppComponent {
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
       .subscribe((event) => {
         if (this.isLoggedIn) {
-          this.logVisitaService.registrarVisita(event.urlAfterRedirects).subscribe();
+          const accion = this.obtenerAccionNavegacion(event.urlAfterRedirects);
+          if (accion) {
+            this.logVisitaService.registrarVisita(event.urlAfterRedirects, accion).subscribe();
+          }
         }
       });
   }
   gestionarSesion() {
     if (this.isLoggedIn) {
-      this.logVisitaService.registrarVisita(this.router.url, 'logout').subscribe();
+      this.logVisitaService.registrarVisita(this.router.url, 'cerrar sesion').subscribe();
       this.authService.logout();
       this.router.navigate(['/login']);
     } else {
       this.router.navigate(['/login']);
     }
+  }
+
+  private obtenerAccionNavegacion(url: string): string | null {
+    const ruta = url.split('?')[0];
+
+    if (ruta.startsWith('/log-visitas')) {
+      return 'consultar log de visitas';
+    }
+
+    if (ruta.startsWith('/reportes')) {
+      return 'consultar modulo de reportes';
+    }
+
+    if (ruta.startsWith('/ver-reporte')) {
+      return 'consultar reporte de transferencia';
+    }
+
+    if (ruta.startsWith('/nuevo-bien')) {
+      return 'abrir formulario de agregar bien';
+    }
+
+    if (ruta.startsWith('/detalles') || ruta.startsWith('/bienes/')) {
+      return 'consultar detalle de bien';
+    }
+
+    if (ruta.startsWith('/bienes')) {
+      return 'consultar bienes';
+    }
+
+    if (ruta.startsWith('/usuarios')) {
+      return 'consultar usuarios';
+    }
+
+    if (ruta.startsWith('/register')) {
+      return 'abrir formulario de agregar usuario';
+    }
+
+    if (ruta.startsWith('/transferencia')) {
+      return 'abrir formulario de transferencia';
+    }
+
+    if (ruta.startsWith('/categorias')) {
+      return 'consultar categorias';
+    }
+
+    if (ruta.startsWith('/ubicacion')) {
+      return 'consultar ubicaciones';
+    }
+
+    if (ruta.startsWith('/perfil')) {
+      return 'consultar perfil';
+    }
+
+    if (ruta.startsWith('/login')) {
+      return null;
+    }
+
+    return 'navegar en el sistema';
   }
 }
 

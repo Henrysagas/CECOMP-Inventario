@@ -4,7 +4,7 @@ import { BienService } from '../../services/bien.service';
 import { NzCardComponent } from "ng-zorro-antd/card";
 import { NzDescriptionsModule } from "ng-zorro-antd/descriptions";
 import { NzGridModule } from 'ng-zorro-antd/grid';
-import { NzTableModule } from 'ng-zorro-antd/table'; // Asegúrate de importar esto
+import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableComponent } from 'ng-zorro-antd/table';
 @Component({

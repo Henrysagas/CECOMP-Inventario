@@ -194,6 +194,11 @@ h2 {
   font-weight: 700;
 }
 
+.state-error {
+  color: #9f1239;
+  background-color: #fff1f2 !important;
+}
+
 /* Action buttons in table: Mostrar en columna */
 .action-buttons {
   display: flex;

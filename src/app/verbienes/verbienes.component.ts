@@ -8,18 +8,24 @@ import { Bien } from '../models/bien';
 import { Categoria } from '../models/categoria';
 import { Detalle } from '../models/detalle';
 import { Historial } from '../models/historial';
+import { NzTabsModule } from 'ng-zorro-antd/tabs';
+import { BienesListadoService } from '../services/bienes-listado.service';
 
 @Component({
   selector: 'app-verbienes',
   templateUrl: './verbienes.component.html',
   styleUrls: ['./verbienes.component.css'],
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule]
+  imports: [CommonModule, FormsModule, RouterModule, NzTabsModule]
 })
 export class VerbienesComponent implements OnInit {
   categorias: Categoria[] = [];
   bienes: Bien[] = [];
   bienesFiltrados: Bien[] = [];
+  cargandoBienes = false;
+  errorBienes = '';
+  paginaActual = 1;
+  tamanioPagina = 5;
   searchTerm = '';
   categoriaManual = '';
   ubicacionTerm = '';
@@ -28,7 +34,21 @@ export class VerbienesComponent implements OnInit {
   selectedCategoria: any = null;
   fechaSeleccionada = '';
 
-  constructor(private bienService: BienService, private categoriaService: CategoriaService) {}
+  bienesFueraInventario: Bien[] = [];
+  bienesFueraFiltrados: Bien[] = [];
+  paginaActualFuera = 1;
+  tamanioPaginaFuera = 8;
+  fechaSalidaInicio = '';
+  fechaSalidaFin = '';
+  searchTermFuera = '';
+  ubicacionTermFuera = '';
+  ambienteTermFuera = '';
+
+  constructor(
+    private bienService: BienService,
+    private categoriaService: CategoriaService,
+    private listado: BienesListadoService
+  ) {}
 
   ngOnInit(): void {
     this.categoriaService.getCategorias().subscribe(
@@ -37,16 +57,26 @@ export class VerbienesComponent implements OnInit {
       },
       (error) => {
         console.error('Error al obtener las categorias:', error);
+        this.errorBienes = 'No se pudieron cargar las categorias.';
       }
     );
 
+    this.cargandoBienes = true;
+    this.errorBienes = '';
     this.bienService.getBienes().subscribe(
       (data: any[]) => {
-        this.bienes = data.map((b) => this.mapBien(b));
-        this.bienesFiltrados = [...this.bienes];
+        this.bienes = data.map((b) => this.listado.mapBien(b));
+        this.bienesFiltrados = this.bienes.filter((bien) => this.listado.estaEnCecomp(bien));
+        this.bienesFueraInventario = this.bienes.filter((bien) => !this.listado.estaEnCecomp(bien));
+        this.bienesFueraFiltrados = [...this.bienesFueraInventario];
+        this.ajustarPaginaActual();
+        this.ajustarPaginaActualFuera();
+        this.cargandoBienes = false;
       },
       (error) => {
         console.error('Error al obtener los bienes:', error);
+        this.errorBienes = 'No se pudieron cargar los bienes. Intenta actualizar la pagina.';
+        this.cargandoBienes = false;
       }
     );
   }
@@ -56,50 +86,9 @@ export class VerbienesComponent implements OnInit {
   }
 
   buscarBienes(): void {
-    this.bienesFiltrados = this.bienes.filter((bien) => {
-      let match = true;
-
-      if (this.manualCategoria && this.categoriaManual) {
-        match = bien.categoria.NOMBRE_CATEGORIA.toLowerCase().includes(this.categoriaManual.toLowerCase());
-      }
-
-      if (!this.manualCategoria && this.selectedCategoria) {
-        match = match && bien.ID_CATEGORIA === this.selectedCategoria.id;
-      }
-
-      if (this.searchTerm) {
-        const term = this.searchTerm.toLowerCase();
-        match =
-          match &&
-          (bien.codigo.toString().includes(term) ||
-            bien.DESCRIPCION?.toLowerCase().includes(term) ||
-            bien.MODELO?.toLowerCase().includes(term) ||
-            bien.NUMERO_SERIE?.toLowerCase().includes(term));
-      }
-
-      if (this.ubicacionTerm) {
-        const ubicacionActual = bien.movimientos[0]?.ambiente?.ubicacion?.NOMBRE || 'Sin Movimiento';
-        match = match && ubicacionActual.toLowerCase().includes(this.ubicacionTerm.toLowerCase());
-      }
-
-      if (this.ambienteTerm) {
-        const ambienteActual = bien.movimientos[0]?.ambiente?.NOMBRE_AMBIENTE || 'Sin Movimiento';
-        match = match && ambienteActual.toLowerCase().includes(this.ambienteTerm.toLowerCase());
-      }
-
-      if (this.fechaSeleccionada) {
-        const fechaSeleccionadaDate = this.parseLocalDateEnd(this.fechaSeleccionada);
-        const movimientosValidos = bien.movimientos.filter(
-          (mov) => new Date(mov.FECHA_MODIFICACION) <= fechaSeleccionadaDate
-        );
-
-        if (movimientosValidos.length === 0 || !this.getUsuarioEnFecha(bien)) {
-          return false;
-        }
-      }
-
-      return match;
-    });
+    this.paginaActual = 1;
+    this.bienesFiltrados = this.listado.filtrarBienesEnCecomp(this.bienes, this.obtenerFiltrosInventario());
+    this.ajustarPaginaActual();
   }
 
   onFechaSeleccionadaChange(): void {
@@ -130,44 +119,148 @@ export class VerbienesComponent implements OnInit {
     this.buscarBienes();
   }
 
-  getUltimaFechaSalida(bien: Bien): string {
-    const ultimoHistorial = [...(bien.historial || [])].sort(
-      (a, b) => new Date(b.fecha_inicio).getTime() - new Date(a.fecha_inicio).getTime()
-    )[0];
+  onTabChange(index: number): void {
+    if (index === 0) {
+      this.fechaSeleccionada = '';
+      this.searchTerm = '';
+      this.manualCategoria = false;
+      this.categoriaManual = '';
+      this.ubicacionTerm = '';
+      this.ambienteTerm = '';
+      this.selectedCategoria = null;
+      this.buscarBienes();
+      return;
+    }
 
-    return ultimoHistorial?.fecha_inicio || 'No disponible';
+    this.fechaSalidaInicio = '';
+    this.fechaSalidaFin = '';
+    this.searchTermFuera = '';
+    this.ubicacionTermFuera = '';
+    this.ambienteTermFuera = '';
+    this.bienesFueraFiltrados = [...this.bienesFueraInventario];
+    this.paginaActualFuera = 1;
+  }
+
+  onFechaSalidaInicioChange(): void {
+    this.buscarBienesFuera();
+  }
+
+  onFechaSalidaFinChange(): void {
+    this.buscarBienesFuera();
+  }
+
+  onSearchTermChangeFuera(): void {
+    this.buscarBienesFuera();
+  }
+
+  onUbicacionChangeFuera(): void {
+    this.buscarBienesFuera();
+  }
+
+  onAmbienteChangeFuera(): void {
+    this.buscarBienesFuera();
+  }
+
+  buscarBienesFuera(): void {
+    this.paginaActualFuera = 1;
+    this.bienesFueraFiltrados = this.listado.filtrarBienesFuera(this.bienesFueraInventario, this.obtenerFiltrosFuera());
+    this.ajustarPaginaActualFuera();
+  }
+
+  getUltimaFechaSalida(bien: Bien): string {
+    return this.listado.getUltimaFechaSalida(bien);
   }
 
   getEstadoEnFecha(bien: Bien): string {
-    const movimiento = this.getMovimientoEnFecha(bien);
-    return movimiento?.ESTADO || 'Sin Estado';
+    return this.listado.getEstadoEnFecha(bien, this.fechaSeleccionada);
   }
 
   getUbicacionEnFecha(bien: Bien): string {
-    const movimiento = this.getMovimientoEnFecha(bien);
-    const ubicacion = movimiento?.ambiente?.ubicacion?.NOMBRE;
-    const ambiente = movimiento?.ambiente?.NOMBRE_AMBIENTE;
-
-    return ubicacion && ambiente ? `${ubicacion} - ${ambiente}` : 'No Registrado';
+    return this.listado.getUbicacionEnFecha(bien, this.fechaSeleccionada);
   }
 
   getUsuarioEnFecha(bien: Bien): string {
-    if (!this.fechaSeleccionada) {
-      return bien.usuario || 'Sin Usuario';
+    return this.listado.getUsuarioEnFecha(bien, this.fechaSeleccionada);
+  }
+
+  get bienesPaginados(): Bien[] {
+    const inicio = (this.paginaActual - 1) * this.tamanioPagina;
+    return this.bienesFiltrados.slice(inicio, inicio + this.tamanioPagina);
+  }
+
+  get bienesFueraPaginados(): Bien[] {
+    const inicio = (this.paginaActualFuera - 1) * this.tamanioPaginaFuera;
+    return this.bienesFueraFiltrados.slice(inicio, inicio + this.tamanioPaginaFuera);
+  }
+
+  get totalPaginas(): number {
+    return Math.max(1, Math.ceil(this.bienesFiltrados.length / this.tamanioPagina));
+  }
+
+  get totalPaginasFuera(): number {
+    return Math.max(1, Math.ceil(this.bienesFueraFiltrados.length / this.tamanioPaginaFuera));
+  }
+
+  get indiceInicio(): number {
+    return this.bienesFiltrados.length === 0 ? 0 : (this.paginaActual - 1) * this.tamanioPagina + 1;
+  }
+
+  get indiceFin(): number {
+    return Math.min(this.paginaActual * this.tamanioPagina, this.bienesFiltrados.length);
+  }
+
+  get indiceInicioFuera(): number {
+    return this.bienesFueraFiltrados.length === 0 ? 0 : (this.paginaActualFuera - 1) * this.tamanioPaginaFuera + 1;
+  }
+
+  get indiceFinFuera(): number {
+    return Math.min(this.paginaActualFuera * this.tamanioPaginaFuera, this.bienesFueraFiltrados.length);
+  }
+
+  irPaginaAnterior(): void {
+    if (this.paginaActual > 1) {
+      this.paginaActual--;
     }
+  }
 
-    const fechaSeleccionadaStart = this.parseLocalDateStart(this.fechaSeleccionada);
-    const fechaSeleccionadaEnd = this.parseLocalDateEnd(this.fechaSeleccionada);
-    const historialValido = [...(bien.historial || [])]
-      .filter((hist) => {
-        const fechaInicio = new Date(hist.fecha_inicio);
-        const fechaFin = hist.fecha_fin ? new Date(hist.fecha_fin) : null;
+  irPaginaSiguiente(): void {
+    if (this.paginaActual < this.totalPaginas) {
+      this.paginaActual++;
+    }
+  }
 
-        return fechaInicio <= fechaSeleccionadaEnd && (!fechaFin || fechaFin >= fechaSeleccionadaStart);
-      })
-      .sort((a, b) => new Date(b.fecha_inicio).getTime() - new Date(a.fecha_inicio).getTime())[0];
+  irPaginaAnteriorFuera(): void {
+    if (this.paginaActualFuera > 1) {
+      this.paginaActualFuera--;
+    }
+  }
 
-    return historialValido?.usuario?.NOMBRES || 'Sin Usuario';
+  irPaginaSiguienteFuera(): void {
+    if (this.paginaActualFuera < this.totalPaginasFuera) {
+      this.paginaActualFuera++;
+    }
+  }
+
+  private obtenerFiltrosInventario() {
+    return {
+      manualCategoria: this.manualCategoria,
+      categoriaManual: this.categoriaManual,
+      selectedCategoria: this.selectedCategoria,
+      searchTerm: this.searchTerm,
+      ubicacionTerm: this.ubicacionTerm,
+      ambienteTerm: this.ambienteTerm,
+      fechaSeleccionada: this.fechaSeleccionada
+    };
+  }
+
+  private obtenerFiltrosFuera() {
+    return {
+      searchTerm: this.searchTermFuera,
+      ubicacionTerm: this.ubicacionTermFuera,
+      ambienteTerm: this.ambienteTermFuera,
+      fechaSalidaInicio: this.fechaSalidaInicio,
+      fechaSalidaFin: this.fechaSalidaFin
+    };
   }
 
   private mapBien(b: any): Bien {
@@ -221,6 +314,38 @@ export class VerbienesComponent implements OnInit {
     return [...bien.movimientos]
       .filter((mov) => new Date(mov.FECHA_MODIFICACION) <= fechaSeleccionadaDate)
       .sort((a, b) => new Date(b.FECHA_MODIFICACION).getTime() - new Date(a.FECHA_MODIFICACION).getTime())[0];
+  }
+
+  private estaEnCecomp(bien: Bien): boolean {
+    const ubicacion = this.getMovimientoEnFecha(bien)?.ambiente?.ubicacion?.NOMBRE || '';
+    return ubicacion.toLowerCase().includes('cecomp');
+  }
+
+  private getUltimoHistorial(bien: Bien): Historial | undefined {
+    return [...(bien.historial || [])].sort(
+      (a, b) => new Date(b.fecha_inicio).getTime() - new Date(a.fecha_inicio).getTime()
+    )[0];
+  }
+
+  private getFechaSalidaPorEstado(bien: Bien): string | null {
+    const movimientoSalida = [...(bien.movimientos || [])]
+      .filter((mov) => this.esEstadoFueraInventario(mov.ESTADO))
+      .sort((a, b) => new Date(b.FECHA_MODIFICACION).getTime() - new Date(a.FECHA_MODIFICACION).getTime())[0];
+
+    return movimientoSalida?.FECHA_MODIFICACION || this.getUltimoHistorial(bien)?.fecha_inicio || null;
+  }
+
+  private esEstadoFueraInventario(estado: string | undefined | null): boolean {
+    const estadoNormalizado = (estado || '').toLowerCase();
+    return estadoNormalizado.includes('raee') || estadoNormalizado.includes('chatarra');
+  }
+
+  private ajustarPaginaActual(): void {
+    this.paginaActual = Math.min(Math.max(this.paginaActual, 1), this.totalPaginas);
+  }
+
+  private ajustarPaginaActualFuera(): void {
+    this.paginaActualFuera = Math.min(Math.max(this.paginaActualFuera, 1), this.totalPaginasFuera);
   }
 
   private parseLocalDateStart(value: string): Date {

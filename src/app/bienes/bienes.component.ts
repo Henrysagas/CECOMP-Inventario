@@ -9,19 +9,25 @@ import { Categoria } from '../models/categoria';
 import { Detalle } from '../models/detalle';
 import { Historial } from '../models/historial';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
+import { NzMessageModule, NzMessageService } from 'ng-zorro-antd/message';
+import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
+import { LogVisitaService } from '../services/log-visita.service';
+import { BienesListadoService } from '../services/bienes-listado.service';
 
 @Component({
   selector: 'app-bienes',
   templateUrl: './bienes.component.html',
   styleUrls: ['./bienes.component.css'],
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, NzTabsModule]
+  imports: [CommonModule, FormsModule, RouterModule, NzTabsModule, NzMessageModule, NzModalModule]
 })
 export class BienesComponent implements OnInit {
   categorias: Categoria[] = [];
   selectedCategoria: any = null;
   bienes: Bien[] = [];
   bienesFiltrados: Bien[] = [];
+  cargandoBienes = false;
+  errorBienes = '';
   paginaActual = 1;
   tamanioPagina = 5;
   searchTerm = '';
@@ -38,8 +44,17 @@ export class BienesComponent implements OnInit {
   fechaSalidaInicio = '';
   fechaSalidaFin = '';
   searchTermFuera = '';
+  ubicacionTermFuera = '';
+  ambienteTermFuera = '';
 
-  constructor(private bienService: BienService, private categoriaService: CategoriaService) {}
+  constructor(
+    private bienService: BienService,
+    private categoriaService: CategoriaService,
+    private logVisitaService: LogVisitaService,
+    private message: NzMessageService,
+    private modal: NzModalService,
+    private listado: BienesListadoService
+  ) {}
 
   ngOnInit(): void {
     this.categoriaService.getCategorias().subscribe(
@@ -48,42 +63,58 @@ export class BienesComponent implements OnInit {
       },
       (error) => {
         console.error('Error al obtener las categorias:', error);
+        this.errorBienes = 'No se pudieron cargar las categorias.';
       }
     );
 
+    this.cargandoBienes = true;
+    this.errorBienes = '';
     this.bienService.getBienes().subscribe(
       (data: any[]) => {
-        this.bienes = data.map((b) => this.mapBien(b));
-        this.bienesFiltrados = this.bienes.filter((bien) => !this.estaFueraInventario(bien));
-        this.bienesFueraInventario = this.bienes.filter((bien) => this.estaFueraInventario(bien));
+        this.bienes = data.map((b) => this.listado.mapBien(b));
+        this.bienesFiltrados = this.bienes.filter((bien) => this.listado.estaEnCecomp(bien));
+        this.bienesFueraInventario = this.bienes.filter((bien) => !this.listado.estaEnCecomp(bien));
         this.bienesFueraFiltrados = [...this.bienesFueraInventario];
         this.ajustarPaginaActual();
         this.ajustarPaginaActualFuera();
+        this.cargandoBienes = false;
       },
       (error) => {
         console.error('Error al obtener los bienes:', error);
+        this.errorBienes = 'No se pudieron cargar los bienes. Intenta actualizar la pagina.';
+        this.cargandoBienes = false;
       }
     );
   }
 
   eliminarBien(id: number): void {
-    if (confirm('Estas seguro de que deseas eliminar este bien?')) {
-      this.bienService.eliminarBien(id).subscribe(
-        () => {
-          this.bienes = this.bienes.filter((bien) => bien.id !== id);
-          this.bienesFiltrados = this.bienesFiltrados.filter((bien) => bien.id !== id);
-          this.bienesFueraInventario = this.bienesFueraInventario.filter((bien) => bien.id !== id);
-          this.bienesFueraFiltrados = this.bienesFueraFiltrados.filter((bien) => bien.id !== id);
-          this.ajustarPaginaActual();
-          this.ajustarPaginaActualFuera();
-          alert('Bien eliminado exitosamente');
-        },
-        (error) => {
-          console.error('Error al eliminar el bien:', error);
-          alert('Hubo un problema al eliminar el bien');
-        }
-      );
-    }
+    this.modal.confirm({
+      nzTitle: 'Eliminar bien',
+      nzContent: 'Esta accion eliminara el bien del inventario. Deseas continuar?',
+      nzOkText: 'Eliminar',
+      nzOkDanger: true,
+      nzCancelText: 'Cancelar',
+      nzOnOk: () => this.confirmarEliminarBien(id)
+    });
+  }
+
+  private confirmarEliminarBien(id: number): void {
+    this.bienService.eliminarBien(id).subscribe(
+      () => {
+        this.logVisitaService.registrarAccion('eliminar bien', '/bienes', { bien_id: id }).subscribe();
+        this.bienes = this.bienes.filter((bien) => bien.id !== id);
+        this.bienesFiltrados = this.bienesFiltrados.filter((bien) => bien.id !== id);
+        this.bienesFueraInventario = this.bienesFueraInventario.filter((bien) => bien.id !== id);
+        this.bienesFueraFiltrados = this.bienesFueraFiltrados.filter((bien) => bien.id !== id);
+        this.ajustarPaginaActual();
+        this.ajustarPaginaActualFuera();
+        this.message.success('Bien eliminado correctamente.');
+      },
+      (error) => {
+        console.error('Error al eliminar el bien:', error);
+        this.message.error('Hubo un problema al eliminar el bien.');
+      }
+    );
   }
 
   toggleManualCategoria(): void {
@@ -112,54 +143,7 @@ export class BienesComponent implements OnInit {
 
   buscarBienes(): void {
     this.paginaActual = 1;
-    this.bienesFiltrados = this.bienes.filter((bien) => {
-      if (this.estaFueraInventario(bien)) {
-        return false;
-      }
-
-      let match = true;
-
-      if (this.manualCategoria && this.categoriaManual) {
-        match = bien.categoria.NOMBRE_CATEGORIA.toLowerCase().includes(this.categoriaManual.toLowerCase());
-      }
-
-      if (!this.manualCategoria && this.selectedCategoria) {
-        match = match && bien.ID_CATEGORIA === this.selectedCategoria.id;
-      }
-
-      if (this.searchTerm) {
-        const term = this.searchTerm.toLowerCase();
-        match =
-          match &&
-          (bien.codigo.toString().includes(term) ||
-            bien.DESCRIPCION?.toLowerCase().includes(term) ||
-            bien.MODELO?.toLowerCase().includes(term) ||
-            bien.NUMERO_SERIE?.toLowerCase().includes(term));
-      }
-
-      if (this.ubicacionTerm) {
-        const ubicacionActual = bien.movimientos[0]?.ambiente?.ubicacion?.NOMBRE || 'Sin Movimiento';
-        match = match && ubicacionActual.toLowerCase().includes(this.ubicacionTerm.toLowerCase());
-      }
-
-      if (this.ambienteTerm) {
-        const ambienteActual = bien.movimientos[0]?.ambiente?.NOMBRE_AMBIENTE || 'Sin Movimiento';
-        match = match && ambienteActual.toLowerCase().includes(this.ambienteTerm.toLowerCase());
-      }
-
-      if (this.fechaSeleccionada) {
-        const fechaSeleccionadaDate = this.parseLocalDateEnd(this.fechaSeleccionada);
-        const movimientosValidos = bien.movimientos.filter(
-          (mov) => new Date(mov.FECHA_MODIFICACION) <= fechaSeleccionadaDate
-        );
-
-        if (movimientosValidos.length === 0 || !this.getUsuarioEnFecha(bien)) {
-          return false;
-        }
-      }
-
-      return match;
-    });
+    this.bienesFiltrados = this.listado.filtrarBienesEnCecomp(this.bienes, this.obtenerFiltrosInventario());
     this.ajustarPaginaActual();
   }
 
@@ -176,6 +160,8 @@ export class BienesComponent implements OnInit {
       this.fechaSalidaInicio = '';
       this.fechaSalidaFin = '';
       this.searchTermFuera = '';
+      this.ubicacionTermFuera = '';
+      this.ambienteTermFuera = '';
       this.bienesFueraFiltrados = [...this.bienesFueraInventario];
       this.paginaActualFuera = 1;
     }
@@ -192,35 +178,15 @@ export class BienesComponent implements OnInit {
   }
 
   getEstadoEnFecha(bien: Bien): string {
-    const movimiento = this.getMovimientoEnFecha(bien);
-    return movimiento?.ESTADO || 'Sin Estado';
+    return this.listado.getEstadoEnFecha(bien, this.fechaSeleccionada);
   }
 
   getUbicacionEnFecha(bien: Bien): string {
-    const movimiento = this.getMovimientoEnFecha(bien);
-    const ubicacion = movimiento?.ambiente?.ubicacion?.NOMBRE;
-    const ambiente = movimiento?.ambiente?.NOMBRE_AMBIENTE;
-
-    return ubicacion && ambiente ? `${ubicacion} - ${ambiente}` : 'No Registrado';
+    return this.listado.getUbicacionEnFecha(bien, this.fechaSeleccionada);
   }
 
   getUsuarioEnFecha(bien: Bien): string {
-    if (!this.fechaSeleccionada) {
-      return bien.usuario || 'Sin Usuario';
-    }
-
-    const fechaSeleccionadaStart = this.parseLocalDateStart(this.fechaSeleccionada);
-    const fechaSeleccionadaEnd = this.parseLocalDateEnd(this.fechaSeleccionada);
-    const historialValido = [...(bien.historial || [])]
-      .filter((hist) => {
-        const fechaInicio = new Date(hist.fecha_inicio);
-        const fechaFin = hist.fecha_fin ? new Date(hist.fecha_fin) : null;
-
-        return fechaInicio <= fechaSeleccionadaEnd && (!fechaFin || fechaFin >= fechaSeleccionadaStart);
-      })
-      .sort((a, b) => new Date(b.fecha_inicio).getTime() - new Date(a.fecha_inicio).getTime())[0];
-
-    return historialValido?.usuario?.NOMBRES || 'Sin Usuario';
+    return this.listado.getUsuarioEnFecha(bien, this.fechaSeleccionada);
   }
 
   onFechaSalidaInicioChange(): void {
@@ -235,37 +201,17 @@ export class BienesComponent implements OnInit {
     this.buscarBienesFuera();
   }
 
+  onUbicacionChangeFuera(): void {
+    this.buscarBienesFuera();
+  }
+
+  onAmbienteChangeFuera(): void {
+    this.buscarBienesFuera();
+  }
+
   buscarBienesFuera(): void {
     this.paginaActualFuera = 1;
-    this.bienesFueraFiltrados = this.bienesFueraInventario.filter((bien) => {
-      let match = true;
-
-      if (this.searchTermFuera) {
-        const term = this.searchTermFuera.toLowerCase();
-        match =
-          bien.DESCRIPCION?.toLowerCase().includes(term) ||
-          bien.codigo.toString().includes(term) ||
-          bien.MODELO?.toLowerCase().includes(term) ||
-          bien.NUMERO_SERIE?.toLowerCase().includes(term);
-      }
-
-      const ultimaFechaSalida = this.getFechaSalidaPorEstado(bien);
-      const ultimaFechaSalidaDate = ultimaFechaSalida ? new Date(ultimaFechaSalida) : null;
-
-      if (this.fechaSalidaInicio && ultimaFechaSalidaDate) {
-        match = match && ultimaFechaSalidaDate >= this.parseLocalDateStart(this.fechaSalidaInicio);
-      }
-
-      if (this.fechaSalidaFin && ultimaFechaSalidaDate) {
-        match = match && ultimaFechaSalidaDate <= this.parseLocalDateEnd(this.fechaSalidaFin);
-      }
-
-      if ((this.fechaSalidaInicio || this.fechaSalidaFin) && !ultimaFechaSalidaDate) {
-        return false;
-      }
-
-      return match;
-    });
+    this.bienesFueraFiltrados = this.listado.filtrarBienesFuera(this.bienesFueraInventario, this.obtenerFiltrosFuera());
     this.ajustarPaginaActualFuera();
   }
 
@@ -328,7 +274,29 @@ export class BienesComponent implements OnInit {
   }
 
   getUltimaFechaSalida(bien: Bien): string {
-    return this.getFechaSalidaPorEstado(bien) || 'No disponible';
+    return this.listado.getUltimaFechaSalida(bien);
+  }
+
+  private obtenerFiltrosInventario() {
+    return {
+      manualCategoria: this.manualCategoria,
+      categoriaManual: this.categoriaManual,
+      selectedCategoria: this.selectedCategoria,
+      searchTerm: this.searchTerm,
+      ubicacionTerm: this.ubicacionTerm,
+      ambienteTerm: this.ambienteTerm,
+      fechaSeleccionada: this.fechaSeleccionada
+    };
+  }
+
+  private obtenerFiltrosFuera() {
+    return {
+      searchTerm: this.searchTermFuera,
+      ubicacionTerm: this.ubicacionTermFuera,
+      ambienteTerm: this.ambienteTermFuera,
+      fechaSalidaInicio: this.fechaSalidaInicio,
+      fechaSalidaFin: this.fechaSalidaFin
+    };
   }
 
   private mapBien(b: any): Bien {
@@ -373,9 +341,9 @@ export class BienesComponent implements OnInit {
     return bien;
   }
 
-  private estaFueraInventario(bien: Bien): boolean {
-    const ultimoHistorial = this.getUltimoHistorial(bien);
-    return !!ultimoHistorial && (ultimoHistorial.id_usuario === 7 || ultimoHistorial.id_usuario === 8);
+  private estaEnCecomp(bien: Bien): boolean {
+    const ubicacion = this.getMovimientoEnFecha(bien)?.ambiente?.ubicacion?.NOMBRE || '';
+    return ubicacion.toLowerCase().includes('cecomp');
   }
 
   private getUltimoHistorial(bien: Bien): Historial | undefined {

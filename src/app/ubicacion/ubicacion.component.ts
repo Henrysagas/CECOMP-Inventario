@@ -11,6 +11,8 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzMessageModule, NzMessageService } from 'ng-zorro-antd/message';
+import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 
 @Component({
   selector: 'app-ubicacion',
@@ -22,7 +24,9 @@ import { NzInputModule } from 'ng-zorro-antd/input';
     NzSelectModule,
     NzButtonModule,
     NzTableModule,
-    NzInputModule
+    NzInputModule,
+    NzMessageModule,
+    NzModalModule
   ],
   styleUrls: ['./ubicacion.component.css']
 })
@@ -50,7 +54,9 @@ export class UbicacionesComponent implements OnInit {
   constructor(
     private ubicacionService: UbicacionService,
     private ambienteService: AmbienteService,
-    private direccionesService: DireccionesService
+    private direccionesService: DireccionesService,
+    private message: NzMessageService,
+    private modal: NzModalService
   ) {}
 
   ngOnInit(): void {
@@ -163,48 +169,172 @@ export class UbicacionesComponent implements OnInit {
   }
   
   eliminarDireccion(idDireccion: number): void {
-    if (confirm('¿Estás seguro de que deseas eliminar esta dirección?')) {
-      this.direccionesService.deleteDireccion(idDireccion).subscribe(
-        () => {
-          this.cargarDirecciones();
-          if (this.selectedDireccion?.id === idDireccion) {
-            this.selectedDireccion = null;
-            this.ubicaciones = [];
-          }
-        },
-        error => console.error('Error al eliminar dirección:', error)
-      );
-    }
+    this.modal.confirm({
+      nzTitle: 'Eliminar direccion',
+      nzContent: 'Se eliminara la direccion seleccionada. Deseas continuar?',
+      nzOkText: 'Eliminar',
+      nzOkDanger: true,
+      nzCancelText: 'Cancelar',
+      nzOnOk: () => this.confirmarEliminarDireccion(idDireccion)
+    });
   }
 
   eliminarUbicacion(idUbicacion: number): void {
-    if (confirm('¿Estás seguro de que deseas eliminar esta ubicación?')) {
-      this.ubicacionService.eliminarUbicacion(idUbicacion).subscribe(
-        () => {
-          if (this.selectedDireccion) {
-            this.cargarUbicaciones(this.selectedDireccion);
-          }
-          if (this.selectedUbicacion?.ID_UBICACION === idUbicacion) {
-            this.selectedUbicacion = null;
-            this.ambientes = [];
-          }
-        },
-        error => console.error('Error al eliminar ubicación:', error)
-      );
-    }
+    this.modal.confirm({
+      nzTitle: 'Eliminar ubicacion',
+      nzContent: 'Se eliminara la ubicacion seleccionada. Deseas continuar?',
+      nzOkText: 'Eliminar',
+      nzOkDanger: true,
+      nzCancelText: 'Cancelar',
+      nzOnOk: () => this.confirmarEliminarUbicacion(idUbicacion)
+    });
   }
 
   eliminarAmbiente(idAmbiente: number): void {
-    if (confirm('¿Estás seguro de que deseas eliminar este ambiente?')) {
-      this.ambienteService.eliminarAmbiente(idAmbiente).subscribe(
-        () => {
-          if (this.selectedUbicacion) {
-            this.verAmbientes(this.selectedUbicacion);
-          }
-        },
-        error => console.error('Error al eliminar ambiente:', error)
-      );
+    this.modal.confirm({
+      nzTitle: 'Eliminar ambiente',
+      nzContent: 'Se eliminara el ambiente seleccionado. Deseas continuar?',
+      nzOkText: 'Eliminar',
+      nzOkDanger: true,
+      nzCancelText: 'Cancelar',
+      nzOnOk: () => this.confirmarEliminarAmbiente(idAmbiente)
+    });
+  }
+
+  cambiarNombreDireccion(direccion: DireccionModel): void {
+    const nuevoNombre = this.pedirNuevoNombre('direccion', direccion.nombre);
+
+    if (!nuevoNombre || nuevoNombre === direccion.nombre.trim()) {
+      return;
     }
+
+    this.direccionesService.updateDireccion(direccion.id, { ...direccion, nombre: nuevoNombre }).subscribe(
+      (direccionActualizada: DireccionModel) => {
+        this.selectedDireccion = direccionActualizada;
+        this.cargarDirecciones();
+        this.message.success('Nombre de direccion actualizado correctamente.');
+      },
+      error => {
+        console.error('Error al cambiar nombre de direccion:', error);
+        this.message.error('No se pudo cambiar el nombre de la direccion.');
+      }
+    );
+  }
+
+  cambiarNombreUbicacion(ubicacion: Ubicacion): void {
+    const nuevoNombre = this.pedirNuevoNombre('ubicacion', ubicacion.NOMBRE);
+
+    if (!nuevoNombre || nuevoNombre === ubicacion.NOMBRE.trim()) {
+      return;
+    }
+
+    this.ubicacionService.updateUbicacion(ubicacion.ID_UBICACION, { ...ubicacion, NOMBRE: nuevoNombre }).subscribe(
+      (ubicacionActualizada: Ubicacion) => {
+        this.selectedUbicacion = ubicacionActualizada;
+        if (this.selectedDireccion) {
+          this.cargarUbicaciones(this.selectedDireccion);
+        }
+        this.message.success('Nombre de ubicacion actualizado correctamente.');
+      },
+      error => {
+        console.error('Error al cambiar nombre de ubicacion:', error);
+        this.message.error('No se pudo cambiar el nombre de la ubicacion.');
+      }
+    );
+  }
+
+  cambiarNombreAmbiente(ambiente: Ambiente): void {
+    const nuevoNombre = this.pedirNuevoNombre('ambiente', ambiente.NOMBRE_AMBIENTE);
+
+    if (!nuevoNombre || nuevoNombre === ambiente.NOMBRE_AMBIENTE.trim()) {
+      return;
+    }
+
+    this.ambienteService.updateAmbiente(ambiente.ID_AMBIENTE, {
+      ...ambiente,
+      nombre: nuevoNombre,
+      NOMBRE_AMBIENTE: nuevoNombre
+    }).subscribe(
+      (ambienteActualizado: Ambiente) => {
+        this.selectedAmbiente = ambienteActualizado;
+        if (this.selectedUbicacion) {
+          this.verAmbientes(this.selectedUbicacion);
+        }
+        this.message.success('Nombre de ambiente actualizado correctamente.');
+      },
+      error => {
+        console.error('Error al cambiar nombre de ambiente:', error);
+        this.message.error('No se pudo cambiar el nombre del ambiente.');
+      }
+    );
+  }
+
+  private confirmarEliminarDireccion(idDireccion: number): void {
+    this.direccionesService.deleteDireccion(idDireccion).subscribe(
+      () => {
+        this.cargarDirecciones();
+        if (this.selectedDireccion?.id === idDireccion) {
+          this.selectedDireccion = null;
+          this.ubicaciones = [];
+        }
+        this.message.success('Direccion eliminada correctamente.');
+      },
+      error => {
+        console.error('Error al eliminar direccion:', error);
+        this.message.error('No se pudo eliminar la direccion.');
+      }
+    );
+  }
+
+  private confirmarEliminarUbicacion(idUbicacion: number): void {
+    this.ubicacionService.eliminarUbicacion(idUbicacion).subscribe(
+      () => {
+        if (this.selectedDireccion) {
+          this.cargarUbicaciones(this.selectedDireccion);
+        }
+        if (this.selectedUbicacion?.ID_UBICACION === idUbicacion) {
+          this.selectedUbicacion = null;
+          this.ambientes = [];
+        }
+        this.message.success('Ubicacion eliminada correctamente.');
+      },
+      error => {
+        console.error('Error al eliminar ubicacion:', error);
+        this.message.error('No se pudo eliminar la ubicacion.');
+      }
+    );
+  }
+
+  private confirmarEliminarAmbiente(idAmbiente: number): void {
+    this.ambienteService.eliminarAmbiente(idAmbiente).subscribe(
+      () => {
+        if (this.selectedUbicacion) {
+          this.verAmbientes(this.selectedUbicacion);
+        }
+        this.message.success('Ambiente eliminado correctamente.');
+      },
+      error => {
+        console.error('Error al eliminar ambiente:', error);
+        this.message.error('No se pudo eliminar el ambiente.');
+      }
+    );
+  }
+
+  private pedirNuevoNombre(tipo: string, nombreActual: string): string | null {
+    const nuevoNombre = window.prompt(`Nuevo nombre de ${tipo}:`, nombreActual);
+
+    if (nuevoNombre === null) {
+      return null;
+    }
+
+    const nombreLimpio = nuevoNombre.trim();
+
+    if (!nombreLimpio) {
+      this.message.warning('El nombre no puede estar vacio.');
+      return null;
+    }
+
+    return nombreLimpio;
   }
 
   volverADirecciones(): void {
@@ -227,8 +357,4 @@ export class UbicacionesComponent implements OnInit {
     this.isAddingDireccion = false;
   }
   
-  editarAmbiente(idAmbiente: number): void {
-    console.log('Editando ambiente con ID:', idAmbiente);
-    //falta implementar
-  }
 }

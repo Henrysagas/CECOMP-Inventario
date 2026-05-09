@@ -7,6 +7,7 @@ import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableComponent, NzTableModule } from 'ng-zorro-antd/table';
 import { NzTimelineModule } from 'ng-zorro-antd/timeline';
+import { NzMessageModule, NzMessageService } from 'ng-zorro-antd/message';
 import { Ambiente } from '../models/ambiente';
 import { Bien } from '../models/bien';
 import { Categoria } from '../models/categoria';
@@ -15,6 +16,7 @@ import { Historial } from '../models/historial';
 import { Ubicacion } from '../models/ubicacion';
 import { Usuario } from '../models/usuario';
 import { BienDetallePresenterService } from '../services/bien-detalle-presenter.service';
+import { LogVisitaService } from '../services/log-visita.service';
 
 @Component({
   selector: 'app-detalles',
@@ -28,6 +30,7 @@ import { BienDetallePresenterService } from '../services/bien-detalle-presenter.
     NzDescriptionsModule,
     NzTableComponent,
     NzTimelineModule,
+    NzMessageModule,
     RouterModule
   ],
   templateUrl: './detalles.component.html',
@@ -45,7 +48,7 @@ export class DetallesComponent implements OnInit {
   selectedAmbienteId: number | null = null;
   selectedEstado = '';
   isEditing = false;
-  estados = ['Nuevo', 'Bueno', 'Regular', 'Deficiente', 'Malo'];
+  estados = ['Nuevo', 'Bueno', 'Regular', 'Deficiente', 'Malo', 'RAEE/Chatarra'];
   movimientos: Detalle[] = [];
   isLoading = false;
   usuariosAdministradores: Usuario[] = [];
@@ -53,7 +56,9 @@ export class DetallesComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private presenter: BienDetallePresenterService
+    private presenter: BienDetallePresenterService,
+    private logVisitaService: LogVisitaService,
+    private message: NzMessageService
   ) {}
 
   ngOnInit(): void {
@@ -63,7 +68,7 @@ export class DetallesComponent implements OnInit {
 
   mostrarAgregarMovimiento(): void {
     this.showAgregarMovimiento = true;
-    this.showAmbienteSelect = false;
+    this.preseleccionarMovimientoActual();
   }
 
   cancelarAgregarMovimiento(): void {
@@ -72,7 +77,7 @@ export class DetallesComponent implements OnInit {
 
   buscarAmbientes(): void {
     if (!this.selectedUbicacionId) {
-      alert('Por favor, selecciona una ubicacion primero.');
+      this.message.warning('Por favor, selecciona una ubicacion primero.');
       return;
     }
 
@@ -87,17 +92,25 @@ export class DetallesComponent implements OnInit {
 
   guardarMovimiento(): void {
     if (!this.selectedAmbienteId || !this.selectedEstado) {
-      alert('Por favor, selecciona un ambiente y estado.');
+      this.message.warning('Por favor, selecciona un ambiente y estado.');
       return;
     }
 
     this.presenter.agregarMovimiento(this.bien, this.selectedAmbienteId, this.selectedEstado).subscribe({
       next: () => {
-        alert('Movimiento agregado');
+        this.logVisitaService.registrarAccion('agregar movimiento de bien', `/detalles/${this.bien.id}`, {
+          bien_id: this.bien.id,
+          ambiente_id: this.selectedAmbienteId,
+          estado: this.selectedEstado
+        }).subscribe();
+        this.message.success('Movimiento agregado correctamente.');
         this.showAgregarMovimiento = false;
         this.refrescarMovimientos();
       },
-      error: error => console.error('Error al agregar movimiento:', error)
+      error: error => {
+        console.error('Error al agregar movimiento:', error);
+        this.message.error('No se pudo agregar el movimiento.');
+      }
     });
   }
 
@@ -111,12 +124,19 @@ export class DetallesComponent implements OnInit {
 
     this.presenter.guardarCambios(this.bien, categoriaSeleccionada).subscribe({
       next: () => {
-        alert('Cambios guardados');
+        this.logVisitaService.registrarAccion('editar bien', `/detalles/${this.bien.id}`, {
+          bien_id: this.bien.id,
+          codigo: this.bien.codigo,
+          categoria_id: this.bien.ID_CATEGORIA,
+          usuario_id: this.bien.ID_USUARIO
+        }).subscribe();
+        this.message.success('Cambios guardados correctamente.');
         this.isEditing = false;
         this.isLoading = false;
       },
       error: error => {
         console.error('Error al guardar cambios:', error);
+        this.message.error('No se pudieron guardar los cambios.');
         this.isLoading = false;
       }
     });
@@ -131,6 +151,48 @@ export class DetallesComponent implements OnInit {
     this.showAmbienteSelect = false;
     this.selectedAmbienteId = null;
     this.buscarAmbientes();
+  }
+
+  private preseleccionarMovimientoActual(): void {
+    const movimientoActual = this.movimientos[0];
+
+    this.selectedEstado = movimientoActual?.ESTADO || '';
+    this.agregarEstadoSiNoExiste(this.selectedEstado);
+    this.selectedAmbienteId = movimientoActual?.ID_AMBIENTE || null;
+    this.selectedUbicacionId = movimientoActual?.ambiente?.ID_UBICACION
+      || movimientoActual?.ambiente?.ubicacion?.ID_UBICACION
+      || null;
+
+    if (!this.selectedUbicacionId) {
+      this.showAmbienteSelect = false;
+      return;
+    }
+
+    this.presenter.cargarAmbientesPorUbicacion(this.selectedUbicacionId).subscribe({
+      next: ambientes => {
+        this.ambientes = ambientes;
+        this.showAmbienteSelect = true;
+
+        if (!ambientes.some(ambiente => ambiente.ID_AMBIENTE === this.selectedAmbienteId)) {
+          this.selectedAmbienteId = null;
+        }
+      },
+      error: error => console.error('Error al obtener ambientes:', error)
+    });
+  }
+
+  private agregarEstadoSiNoExiste(estado: string): void {
+    if (estado && !this.estados.includes(estado)) {
+      this.estados = [estado, ...this.estados];
+    }
+  }
+
+  mostrarUsuarioActualNoAsignable(): boolean {
+    if (!this.bien?.ID_USUARIO) {
+      return false;
+    }
+
+    return !this.usuariosAdministradores.some(usuario => Number(usuario.id) === Number(this.bien.ID_USUARIO));
   }
 
   private cargarVista(bienId: number): void {

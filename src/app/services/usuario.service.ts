@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { Usuario } from '../models/usuario';
 
 @Injectable({
@@ -18,6 +19,20 @@ export class UsuarioService {
   // Método para obtener usuarios con rol de administrador
   getUsuariosConRolAdmin(): Observable<Usuario[]> {
     return this.http.get<Usuario[]>(`${this.apiUrl}/admins`);
+  }
+
+  getUsuariosAsignablesBienes(): Observable<Usuario[]> {
+    return this.getUsuariosConRolAdmin().pipe(
+      map(usuarios => usuarios.filter(usuario => !this.esUsuarioPatrimonio(usuario)))
+    );
+  }
+
+  esUsuarioSinUsuario(usuario: Usuario): boolean {
+    return this.obtenerTextoUsuario(usuario) === 'sin usuario';
+  }
+
+  esUsuarioPatrimonio(usuario: Usuario): boolean {
+    return this.obtenerTextoUsuario(usuario) === 'patrimonio';
   }
 
   // Método para obtener todos los usuarios
@@ -56,6 +71,18 @@ export class UsuarioService {
 
   updateUsuario(id: number, usuario: Partial<Usuario>): Observable<Usuario> {
     return this.http.put<Usuario>(`${this.apiUrl}/${id}`, usuario);
+  }
+
+  private obtenerTextoUsuario(usuario: Usuario): string {
+    return [
+      usuario.NOMBRES,
+      usuario.APELLIDOS,
+      usuario.USU
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .trim()
+      .toLowerCase();
   }
   
 }

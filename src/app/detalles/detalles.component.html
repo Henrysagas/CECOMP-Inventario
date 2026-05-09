@@ -34,6 +34,9 @@
           <div class="form-group">
             <label for="usuarioAsignado">Usuario Asignado</label>
             <select id="usuarioAsignado" [(ngModel)]="bien.ID_USUARIO" name="usuarioAsignado" required [disabled]="!isEditing">
+              <option *ngIf="mostrarUsuarioActualNoAsignable()" [value]="bien.ID_USUARIO" disabled>
+                {{ bien.usuario || 'Usuario no asignable' }}
+              </option>
               <option *ngFor="let usuario of usuariosAdministradores" [value]="usuario.id">
                 {{ usuario.NOMBRES }} {{ usuario.APELLIDOS }}
               </option>

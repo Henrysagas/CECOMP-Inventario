@@ -1,0 +1,49 @@
+<div class="document-admin">
+  <header class="document-admin-header">
+    <div>
+      <h2>Documento</h2>
+      <p>Configuracion general usada en reportes y movimientos internos.</p>
+    </div>
+    <a nz-button nzType="default" routerLink="/reportes">Volver</a>
+  </header>
+
+  <section class="document-section">
+    <h3>Encabezado</h3>
+    <div class="form-grid">
+      <label>
+        Institucion
+        <input nz-input [ngModel]="config.institucion" readonly />
+      </label>
+      <label>
+        Dependencia
+        <input nz-input [ngModel]="config.dependencia" readonly />
+      </label>
+      <label>
+        Texto para detectar CECOMP
+        <input nz-input [ngModel]="config.ubicacionCecomp" readonly />
+      </label>
+    </div>
+  </section>
+
+  <section class="document-section">
+    <h3>Transferencia interna</h3>
+    <div class="form-grid">
+      <label>
+        Nombre del registro
+        <input nz-input [ngModel]="config.nombreInterno" readonly />
+      </label>
+      <label>
+        Documento interno
+        <input nz-input [ngModel]="config.documentoInterno" readonly />
+      </label>
+      <label class="wide-field">
+        Motivo interno
+        <textarea nz-input rows="3" [ngModel]="config.motivoInterno" readonly></textarea>
+      </label>
+      <label class="wide-field">
+        Titulo del PDF
+        <input nz-input [ngModel]="config.tituloMovimientoInterno" readonly />
+      </label>
+    </div>
+  </section>
+</div>

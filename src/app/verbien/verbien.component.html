@@ -1,25 +1,55 @@
 <div class="view-actions">
-  <button type="button" class="btn btn-dark" routerLink="/verbienes">Volver</button>
+  <button type="button" class="btn btn-dark" (click)="volver()">Volver</button>
 </div>
 
 <nz-tabset>
-  <!-- TAB: Descripción -->
-  <nz-tab nzTitle="Descripción del Bien">
+  <!-- TAB: Descripcion -->
+  <nz-tab nzTitle="Descripci&oacute;n del Bien">
     <div class="descripcion-column">
-      <nz-card nzTitle="Descripción del Bien" class="custom-card">
-  <div class="bien-detalles-grid">
-    <p><strong>ID:</strong> {{ bien.codigo }}</p>
-    <p><strong>Descripción:</strong> {{ bien.DESCRIPCION }}</p>
-    <p><strong>Modelo:</strong> {{ bien.MODELO }}</p>
-    <p><strong>Número de Serie:</strong> {{ bien.NUMERO_SERIE }}</p>
-    <p><strong>Tipo:</strong> {{ bien.TIPO }}</p>
-    <p><strong>Color:</strong> {{ bien.COLOR }}</p>
-    <p><strong>Categoría:</strong> {{ bien.categoria.NOMBRE_CATEGORIA }}</p>
-    <p><strong>Fecha de Ingreso:</strong> {{ bien.FECHA_INGRESO | date }}</p>
-    <p><strong>Usuario:</strong> {{ bien.usuario }}</p>
-  </div>
-</nz-card>
-
+      <nz-card nzTitle="Descripci&oacute;n del Bien" class="custom-card">
+        <div class="tabla-contenedor" *ngIf="bien">
+          <table class="table descripcion-table">
+            <tbody>
+              <tr>
+                <th scope="row">ID</th>
+                <td>{{ bien.codigo }}</td>
+              </tr>
+              <tr class="descripcion-highlight">
+                <th scope="row">Descripci&oacute;n</th>
+                <td>{{ bien.DESCRIPCION }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Modelo</th>
+                <td>{{ bien.MODELO }}</td>
+              </tr>
+              <tr>
+                <th scope="row">N&uacute;mero de Serie</th>
+                <td>{{ bien.NUMERO_SERIE }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Tipo</th>
+                <td>{{ bien.TIPO }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Color</th>
+                <td>{{ bien.COLOR }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Categor&iacute;a</th>
+                <td>{{ bien.categoria.NOMBRE_CATEGORIA }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Fecha de Ingreso</th>
+                <td>{{ bien.FECHA_INGRESO | date }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Usuario</th>
+                <td>{{ obtenerNombreUsuario(bien.usuario) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </nz-card>
     </div>
   </nz-tab>
 
@@ -28,23 +58,31 @@
     <div class="movimientos-column">
       <h3>Historial de Movimientos</h3>
       <div *ngIf="movimientos && movimientos.length > 0; else noMovimientos">
+        <div class="pagination-summary">
+          Mostrando {{ inicioMovimientos }}-{{ finMovimientos }} de {{ movimientos.length }} movimientos
+        </div>
         <div class="tabla-contenedor">
           <table class="table table-striped">
             <thead>
               <tr>
-                <th scope="col">Fecha de Modificación</th>
+                <th scope="col">Fecha de Modificaci&oacute;n</th>
                 <th scope="col">Estado</th>
-                <th scope="col">Ubicación</th>
+                <th scope="col">Ubicaci&oacute;n</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let movimiento of movimientos">
+              <tr *ngFor="let movimiento of movimientosPaginados">
                 <td>{{ movimiento.FECHA_MODIFICACION | date }}</td>
                 <td>{{ movimiento.ESTADO }}</td>
                 <td>{{ movimiento.ambiente?.ubicacion?.NOMBRE }} - {{ movimiento.ambiente?.NOMBRE_AMBIENTE }}</td>
               </tr>
             </tbody>
           </table>
+        </div>
+        <div class="pagination-controls" *ngIf="movimientos.length > tamanioPaginaMovimientos">
+          <button class="btn btn-search" (click)="irPaginaMovimientosAnterior()" [disabled]="paginaMovimientos === 1">Anterior</button>
+          <span>Pagina {{ paginaMovimientos }} de {{ totalPaginasMovimientos }}</span>
+          <button class="btn btn-search" (click)="irPaginaMovimientosSiguiente()" [disabled]="paginaMovimientos === totalPaginasMovimientos">Siguiente</button>
         </div>
       </div>
       <ng-template #noMovimientos>
@@ -56,16 +94,44 @@
   <!-- TAB: Historial de Responsables -->
   <nz-tab nzTitle="Historial de Responsables">
     <div class="historial-column">
-      <h3>Historial de Responsables</h3>
-      <nz-timeline>
-        <nz-timeline-item *ngFor="let item of historial">
-          <p>
-            <strong>{{ item.usuario?.NOMBRES }}</strong> 
-            ({{ item.fecha_inicio | date }} - 
-            {{ item.fecha_fin ? (item.fecha_fin | date) : 'Actualidad' }})
-          </p>
-        </nz-timeline-item>
-      </nz-timeline>
+      <div class="responsables-header">
+        <div>
+          <p class="eyebrow">Inventario</p>
+          <h3>Historial de Responsables</h3>
+        </div>
+        <span class="status-pill">{{ responsableActualNombre }}</span>
+      </div>
+
+      <div class="tabla-contenedor" *ngIf="historialOrdenado.length > 0; else noResponsables">
+        <div class="pagination-summary">
+          Mostrando {{ inicioResponsables }}-{{ finResponsables }} de {{ historialOrdenado.length }} responsables
+        </div>
+        <table class="table responsables-table">
+          <thead>
+            <tr>
+              <th scope="col">Responsable</th>
+              <th scope="col">Desde</th>
+              <th scope="col">Hasta</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of responsablesPaginados" [class.current-row]="item.vigente">
+              <td>{{ obtenerNombreResponsable(item) }}</td>
+              <td>{{ item.fecha_inicio | date }}</td>
+              <td>{{ item.fecha_fin ? (item.fecha_fin | date) : 'Actualidad' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination-controls" *ngIf="historialOrdenado.length > tamanioPaginaResponsables">
+        <button class="btn btn-search" (click)="irPaginaResponsablesAnterior()" [disabled]="paginaResponsables === 1">Anterior</button>
+        <span>Pagina {{ paginaResponsables }} de {{ totalPaginasResponsables }}</span>
+        <button class="btn btn-search" (click)="irPaginaResponsablesSiguiente()" [disabled]="paginaResponsables === totalPaginasResponsables">Siguiente</button>
+      </div>
+
+      <ng-template #noResponsables>
+        <p class="empty-state">No hay responsables registrados para este bien.</p>
+      </ng-template>
     </div>
   </nz-tab>
 </nz-tabset>

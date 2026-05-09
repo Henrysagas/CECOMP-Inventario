@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Modalidad } from '../models/modalidad';
 import { Bien } from '../models/bien';
+import { BienModalidad } from '../models/bien-modalidad';
 
 @Injectable({
   providedIn: 'root'
@@ -46,5 +47,9 @@ export class ModalidadService {
 
   getModalidadById(id: number): Observable<Modalidad> {
     return this.http.get<Modalidad>(`${this.apiUrl}/${id}`);
+  }
+
+  getBienesPorModalidad(id: number): Observable<BienModalidad[]> {
+    return this.http.get<BienModalidad[]>(`${this.apiUrl}/${id}/bienes`);
   }
 }

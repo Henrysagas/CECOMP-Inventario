@@ -77,6 +77,26 @@ h2 {
   max-width: 420px;
 }
 
+.transfer-summary {
+  display: flex;
+  flex: 1 1 320px;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.transfer-summary span {
+  min-height: 34px;
+  padding: 8px 10px;
+  background-color: #ffffff;
+  border: 1px solid rgba(211, 47, 47, 0.3);
+  border-radius: 4px;
+  color: #6b1f2e;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
 .filter-field label,
 .consulta-label {
   color: #7b1f2a;
@@ -234,17 +254,17 @@ button[disabled] {
 
 .transfer-table th:nth-child(2),
 .transfer-table td:nth-child(2) {
-  width: 140px;
+  width: 170px;
 }
 
 .transfer-table th:nth-child(3),
 .transfer-table td:nth-child(3) {
-  width: auto;
+  width: 230px;
 }
 
 .transfer-table th:nth-child(4),
 .transfer-table td:nth-child(4) {
-  width: 130px;
+  width: 180px;
 }
 
 .transfer-table th:nth-child(5),
@@ -254,7 +274,11 @@ button[disabled] {
 
 .transfer-table th:nth-child(6),
 .transfer-table td:nth-child(6) {
-  width: 110px;
+  width: 120px;
+}
+
+.transfer-report-column {
+  max-width: 230px;
 }
 
 .detail-line {
@@ -272,6 +296,11 @@ button[disabled] {
   color: #7b1f2a;
   text-align: center;
   font-weight: 700;
+}
+
+.state-error {
+  color: #9f1239;
+  background-color: #fff1f2 !important;
 }
 
 .consulta-history {

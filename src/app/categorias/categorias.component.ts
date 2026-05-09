@@ -5,13 +5,18 @@ import { Categoria } from '../models/categoria';
 import { Bien } from '../models/bien';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { NzMessageModule, NzMessageService } from 'ng-zorro-antd/message';
+import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
+import { LogVisitaService } from '../services/log-visita.service';
 
 @Component({
   selector: 'app-categorias',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule
+    FormsModule,
+    NzMessageModule,
+    NzModalModule
   ],
   templateUrl: './categorias.component.html',
   styleUrls: ['./categorias.component.css'],
@@ -30,7 +35,10 @@ export class CategoriasComponent implements OnInit {
 
   constructor(
     private categoriaService: CategoriaService,
-    private bienService: BienService
+    private bienService: BienService,
+    private logVisitaService: LogVisitaService,
+    private message: NzMessageService,
+    private modal: NzModalService
   ) {}
 
   ngOnInit(): void {
@@ -103,6 +111,10 @@ export class CategoriasComponent implements OnInit {
     if (this.isEditing) {
       this.categoriaService.updateCategoria(this.categoriaFormulario).subscribe(
         () => {
+          this.logVisitaService.registrarAccion('editar categoria', '/categorias', {
+            categoria_id: this.categoriaFormulario.id,
+            nombre: this.categoriaFormulario.NOMBRE_CATEGORIA
+          }).subscribe();
           this.mostrarMensaje('Categoria actualizada correctamente.', 'success');
           this.cargarCategorias();
           this.isEditing = false;
@@ -115,7 +127,11 @@ export class CategoriasComponent implements OnInit {
       );
     } else if (this.isAdding) {
       this.categoriaService.createCategoria(this.categoriaFormulario).subscribe(
-        () => {
+        (response) => {
+          this.logVisitaService.registrarAccion('agregar categoria', '/categorias', {
+            categoria_id: response?.id ?? this.categoriaFormulario.id,
+            nombre: this.categoriaFormulario.NOMBRE_CATEGORIA
+          }).subscribe();
           this.mostrarMensaje('Categoria agregada correctamente.', 'success');
           this.cargarCategorias();
           this.isAdding = false;
@@ -153,24 +169,37 @@ export class CategoriasComponent implements OnInit {
           return;
         }
 
-        if (confirm(`Deseas eliminar la categoria "${categoria.NOMBRE_CATEGORIA}"?`)) {
-          this.categoriaService.deleteCategoria(categoria.id).subscribe(
-            () => {
-              this.mostrarMensaje('Categoria eliminada correctamente.', 'success');
-              this.cargarCategorias();
-              this.categoriaSeleccionada = { id: 0, NOMBRE_CATEGORIA: '' };
-            },
-            (error) => {
-              this.mostrarMensaje('No se pudo eliminar la categoria.', 'error');
-              console.error('Error al eliminar la categoria:', error);
-            }
-          );
-        }
+        this.modal.confirm({
+          nzTitle: 'Eliminar categoria',
+          nzContent: `Deseas eliminar la categoria "${categoria.NOMBRE_CATEGORIA}"?`,
+          nzOkText: 'Eliminar',
+          nzOkDanger: true,
+          nzCancelText: 'Cancelar',
+          nzOnOk: () => this.confirmarEliminarCategoria(categoria)
+        });
       },
       (error) => {
         this.verificandoEliminacion = false;
         this.mostrarMensaje('No se pudo verificar si la categoria tiene bienes asociados.', 'error');
         console.error('Error al verificar bienes de la categoria:', error);
+      }
+    );
+  }
+
+  private confirmarEliminarCategoria(categoria: Categoria): void {
+    this.categoriaService.deleteCategoria(categoria.id).subscribe(
+      () => {
+        this.logVisitaService.registrarAccion('eliminar categoria', '/categorias', {
+          categoria_id: categoria.id,
+          nombre: categoria.NOMBRE_CATEGORIA
+        }).subscribe();
+        this.mostrarMensaje('Categoria eliminada correctamente.', 'success');
+        this.cargarCategorias();
+        this.categoriaSeleccionada = { id: 0, NOMBRE_CATEGORIA: '' };
+      },
+      (error) => {
+        this.mostrarMensaje('No se pudo eliminar la categoria.', 'error');
+        console.error('Error al eliminar la categoria:', error);
       }
     );
   }
@@ -191,6 +220,7 @@ export class CategoriasComponent implements OnInit {
   private mostrarMensaje(mensaje: string, tipo: 'success' | 'error'): void {
     this.mensaje = mensaje;
     this.tipoMensaje = tipo;
+    tipo === 'success' ? this.message.success(mensaje) : this.message.error(mensaje);
   }
 
   private limpiarMensaje(): void {

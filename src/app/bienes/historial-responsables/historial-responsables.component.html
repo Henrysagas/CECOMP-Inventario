@@ -1,19 +1,76 @@
-<div class="view-actions" *ngIf="bien">
-  <button type="button" class="btn btn-dark" routerLink="/bienes">Volver</button>
-</div>
-
-  <!-- Columna Historial de Responsables -->
-  <div nz-col nzFlex="auto" [nzXs]="{ span: 24 }" [nzLg]="{ span: 8 }" class="historial-column">
-    <div class="historial-column">
-      <h3>Historial de Responsables</h3>
-      <nz-timeline>
-        <nz-timeline-item *ngFor="let item of historial">
-          <p>
-            <strong>{{ item.usuario?.NOMBRES }}</strong> 
-            ({{ item.fecha_inicio | date }} - 
-            {{ item.fecha_fin ? (item.fecha_fin | date) : 'Actualidad' }})
-          </p>
-        </nz-timeline-item>
-      </nz-timeline>
+<ng-container *ngIf="bien">
+  <section class="responsables-page">
+    <div class="view-actions">
+      <button type="button" class="btn btn-light" routerLink="/bienes">Volver</button>
     </div>
-  </div>
+
+    <div class="responsables-panel">
+      <div class="responsables-header">
+        <div>
+          <p class="eyebrow">Inventario</p>
+          <h2>Responsables del bien</h2>
+          <p class="subtitle">Consulta el historial de asignaciones y registra un cambio de responsable.</p>
+        </div>
+        <span class="status-pill">{{ responsableActualNombre }}</span>
+      </div>
+
+      <div class="responsable-actions">
+        <button type="button" class="btn btn-danger" (click)="mostrarCambiarResponsable()" *ngIf="!showCambiarResponsable">
+          Cambiar responsable
+        </button>
+
+        <form class="responsable-form" (ngSubmit)="guardarResponsable()" *ngIf="showCambiarResponsable">
+          <div class="form-group">
+            <label for="responsable">Nuevo responsable</label>
+            <select id="responsable" [(ngModel)]="selectedUsuarioId" name="responsable" required>
+              <option *ngIf="mostrarResponsableActualNoAsignable()" [ngValue]="bien.ID_USUARIO" disabled>
+                {{ bien.usuario || 'Responsable actual no asignable' }}
+              </option>
+              <option *ngFor="let usuario of usuariosAdministradores" [ngValue]="usuario.id">
+                {{ usuario.NOMBRES }} {{ usuario.APELLIDOS }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-buttons">
+            <button type="submit" class="btn btn-danger" [disabled]="isLoading || !puedeGuardarResponsable()">
+              {{ isLoading ? 'Guardando...' : 'Guardar responsable' }}
+            </button>
+            <button type="button" class="btn btn-dark" (click)="cancelarCambiarResponsable()" [disabled]="isLoading">
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="tabla-contenedor" *ngIf="historialOrdenado.length > 0; else sinHistorial">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th scope="col">Responsable</th>
+              <th scope="col">Desde</th>
+              <th scope="col">Hasta</th>
+              <th scope="col">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of historialOrdenado" [class.current-row]="item.vigente">
+              <td>{{ obtenerNombreResponsable(item) }}</td>
+              <td>{{ item.fecha_inicio | date }}</td>
+              <td>{{ item.fecha_fin ? (item.fecha_fin | date) : 'Actualidad' }}</td>
+              <td>
+                <span class="table-pill" [class.table-pill--current]="item.vigente">
+                  {{ item.vigente ? 'Actual' : 'Anterior' }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ng-template #sinHistorial>
+        <p class="empty-state">No hay responsables registrados para este bien.</p>
+      </ng-template>
+    </div>
+  </section>
+</ng-container>

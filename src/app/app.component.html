@@ -50,6 +50,12 @@
               Usuarios
             </a>
           </li>
+          <li *ngIf="isLoggedIn && isAdmin" nz-menu-item nzMatchRouter>
+            <a routerLink="/log-visitas">
+              <span nz-icon nzType="container" nzTheme="outline" style="margin-right: 5px;"></span>
+              Log de visitas
+            </a>
+          </li>
           <li *ngIf="isLoggedIn" nz-menu-item nzMatchRouter>
             <a routerLink="/perfil">
               <span nz-icon nzType="container" nzTheme="outline" style="margin-right: 5px;"></span>

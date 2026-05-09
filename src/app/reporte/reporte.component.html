@@ -13,6 +13,36 @@
           </nz-range-picker>
         </div>
 
+        <div class="filter-field">
+          <label>Buscar modalidad</label>
+          <input
+            nz-input
+            [(ngModel)]="transferenciaSearchTerm"
+            (ngModelChange)="aplicarFiltrosTransferencia()"
+            placeholder="Nombre, documento, motivo, tipo o fecha" />
+        </div>
+
+        <div class="filter-field">
+          <label>Tipo de transferencia</label>
+          <nz-select
+            [(ngModel)]="selectedTipoTransferencia"
+            (ngModelChange)="aplicarFiltrosTransferencia()"
+            nzAllowClear
+            nzPlaceHolder="Todos los tipos">
+            <nz-option
+              *ngFor="let tipo of tipoModalidades"
+              [nzValue]="tipo.id"
+              [nzLabel]="tipo.nombre">
+            </nz-option>
+          </nz-select>
+        </div>
+
+        <div class="transfer-summary" aria-label="Resumen de transferencias">
+          <span>Internas: {{ getCantidadPorTipo('interna') }}</span>
+          <span>Externas: {{ getCantidadPorTipo('externa') }}</span>
+          <span>Patrimonio: {{ getCantidadPorTipo('patrimonio') }}</span>
+        </div>
+
         <button nz-button nzType="primary" class="btn-generar-reporte" (click)="generarReporte('transferencia')">
           Generar Reporte
         </button>
@@ -24,19 +54,25 @@
             <tr>
               <th>Fecha</th>
               <th>Nombre</th>
-              <th>Caracteristicas del reporte</th>
+              <th class="transfer-report-column">Caracteristicas del reporte</th>
               <th>Documento</th>
               <th>Bienes</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
+            <tr *ngIf="cargandoTransferencias">
+              <td colspan="6" class="empty-cell">Cargando reportes de transferencia...</td>
+            </tr>
+            <tr *ngIf="!cargandoTransferencias && errorTransferencias">
+              <td colspan="6" class="empty-cell state-error">{{ errorTransferencias }}</td>
+            </tr>
             <tr *ngFor="let reporte of filteredTransferReportData">
               <td>{{ reporte.fecha | date:'dd/MM/yyyy' }}</td>
               <td>{{ reporte.nombre || 'Sin nombre' }}</td>
               <td>
                 <span class="detail-line"><strong>Motivo:</strong> {{ reporte.motivo_traslado || 'Sin motivo' }}</span>
-                <span class="detail-line"><strong>Tipo:</strong> {{ reporte.ID_TIPO_MODALIDAD || 'No registrado' }}</span>
+                <span class="detail-line"><strong>Tipo:</strong> {{ getTipoModalidadNombre(reporte.ID_TIPO_MODALIDAD) }}</span>
               </td>
               <td>{{ reporte.documento_autorizacion || 'Sin documento' }}</td>
               <td>{{ getCantidadBienes(reporte) }}</td>
@@ -46,7 +82,7 @@
                 </button>
               </td>
             </tr>
-            <tr *ngIf="filteredTransferReportData.length === 0">
+            <tr *ngIf="!cargandoTransferencias && !errorTransferencias && filteredTransferReportData.length === 0">
               <td colspan="6" class="empty-cell">No hay reportes de transferencia para mostrar.</td>
             </tr>
           </tbody>
@@ -113,6 +149,10 @@
               (ngModelChange)="aplicarFiltroCategoria()"
               nzPlaceHolder="Seleccione categoria (opcional)"
               nzSize="default">
+              <nz-option
+                [nzValue]="null"
+                nzLabel="Todas las categorias">
+              </nz-option>
               <nz-option
                 *ngFor="let categoria of categorias"
                 [nzValue]="categoria"
@@ -191,11 +231,20 @@
             </tr>
           </thead>
           <tbody>
+            <tr *ngIf="cargandoConsulta">
+              <td colspan="4" class="empty-cell">Cargando bienes de la consulta...</td>
+            </tr>
+            <tr *ngIf="!cargandoConsulta && errorConsulta">
+              <td colspan="4" class="empty-cell state-error">{{ errorConsulta }}</td>
+            </tr>
             <tr *ngFor="let bien of basicTable.data">
               <td>{{ bien.codigo }}</td>
               <td>{{ getCategoriaBien(bien) }}</td>
               <td>{{ getDescripcionConsulta(bien) }}</td>
               <td>{{ getEstadoBien(bien) }}</td>
+            </tr>
+            <tr *ngIf="!cargandoConsulta && !errorConsulta && bienesFiltradosPorCategoria.length === 0">
+              <td colspan="4" class="empty-cell">No hay bienes para mostrar con la consulta actual.</td>
             </tr>
           </tbody>
         </nz-table>

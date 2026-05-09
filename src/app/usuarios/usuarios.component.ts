@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { UsuarioService } from '../services/usuario.service';
 import { Usuario } from '../models/usuario';
 import { NzGridModule } from 'ng-zorro-antd/grid';
-import { NzTableModule } from 'ng-zorro-antd/table'; // Asegúrate de importar esto
+import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
-import { NzTableComponent } from 'ng-zorro-antd/table';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -17,26 +17,26 @@ import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzInputModule } from 'ng-zorro-antd/input';
+import { LogVisitaService } from '../services/log-visita.service';
 
 
 @Component({
   selector: 'app-usuarios',
   standalone: true,
-  imports: [NzDescriptionsModule,FormsModule,CommonModule,NzTableComponent,NzSelectModule,NzTableModule,NzGridModule,
+  imports: [NzDescriptionsModule,FormsModule,CommonModule,NzSelectModule,NzTableModule,NzGridModule,
     RouterLink,NzButtonModule,
-    NzIconModule,NzCheckboxModule,NzTabsModule,NzInputModule],
+    NzIconModule,NzCheckboxModule,NzTabsModule,NzInputModule,NzModalModule],
   templateUrl: './usuarios.component.html',
   styleUrl: './usuarios.component.css'
 })
 export class UsuariosComponent implements OnInit {
   usuarios: Usuario[] = [];
-  bienes: any[] = []; // Lista de bienes asignados al usuario
-  isConfirmModalVisible = false; // Controla la visibilidad del modal de confirmación
-  usuarioSeleccionado: Usuario | null = null; // Usuario seleccionado para cambiar a administrador
+  bienes: any[] = [];
   seleccionarTodos: boolean = false;
   usuarioDestino: number | null = null;
   usuarioOrigenId: number | null = null;
-  mostrarInactivos: boolean = false;
+  rolFiltro: number | null = null;
+  estadoFiltro: 'activos' | 'inactivos' | 'todos' = 'activos';
   transfiriendoBienes = false;
   cargandoBienes = false;
   tabSeleccionado = 0;
@@ -51,6 +51,19 @@ export class UsuariosComponent implements OnInit {
 
   get usuariosActivos(): Usuario[] {
     return this.usuarios.filter(u => u.estado !== 'Inactivo' && u.id !== this.usuarioOrigenId);
+  }
+
+  get usuariosFiltrados(): Usuario[] {
+    return this.usuarios.filter(usuario => {
+      const coincideRol = !this.rolFiltro || usuario.ID_ROL === this.rolFiltro;
+      const esInactivo = usuario.estado === 'Inactivo';
+      const coincideEstado =
+        this.estadoFiltro === 'todos' ||
+        (this.estadoFiltro === 'activos' && !esInactivo) ||
+        (this.estadoFiltro === 'inactivos' && esInactivo);
+
+      return coincideRol && coincideEstado;
+    });
   }
 
   get categoriasBienes(): Array<{ id: number; nombre: string }> {
@@ -97,7 +110,9 @@ export class UsuariosComponent implements OnInit {
   constructor(
     private usuariosService: UsuarioService,
     private bienService: BienService,
-    private message: NzMessageService
+    private message: NzMessageService,
+    private logVisitaService: LogVisitaService,
+    private modal: NzModalService
   ) {}
 
   ngOnInit(): void {
@@ -107,9 +122,7 @@ export class UsuariosComponent implements OnInit {
   cargarUsuarios(): void {
     this.usuariosService.getUsuarios().subscribe({
       next: (data) => {
-        this.usuarios = this.mostrarInactivos 
-          ? data 
-          : data.filter(usuario => usuario.estado !== 'Inactivo');
+        this.usuarios = data;
       },
       error: () => {
         this.message.error('Error al cargar usuarios');
@@ -117,8 +130,9 @@ export class UsuariosComponent implements OnInit {
     });
   }
 
-  toggleMostrarInactivos(): void {
-    this.cargarUsuarios();
+  limpiarFiltrosUsuarios(): void {
+    this.rolFiltro = null;
+    this.estadoFiltro = 'activos';
   }
 
   eliminarUsuario(id: number): void {
@@ -135,6 +149,9 @@ export class UsuariosComponent implements OnInit {
             usuario.ID_ROL = 3; // Cambiamos el rol a "eliminado"
             this.usuariosService.updateRol(usuario.id, usuario.ID_ROL).subscribe({
               next: () => {
+                this.logVisitaService.registrarAccion('eliminar usuario', '/usuarios', {
+                  usuario_id: usuario.id
+                }).subscribe();
                 this.message.success('Usuario eliminado (rol cambiado) correctamente');
                 this.cargarUsuarios(); // Recargar lista
               },
@@ -152,7 +169,6 @@ export class UsuariosComponent implements OnInit {
   }
 
   prepararTransferenciaDesdeUsuario(idUsuario: number): void {
-    this.tabSeleccionado = 1;
     this.cargarBienesDeOrigen(idUsuario);
   }
 
@@ -185,23 +201,12 @@ export class UsuariosComponent implements OnInit {
     });
   }
 
-  // Función llamada cuando se cambia el rol
   onRolChange(usuario: Usuario): void {
-    if (usuario.ID_ROL === 1) {
-      this.usuarioSeleccionado = usuario; // Guardamos el usuario seleccionado
-      this.isConfirmModalVisible = true; // Mostramos el modal de confirmación
-    }
+    this.actualizarRol(usuario);
   }
+
   toggleMostrarEliminados(): void {
-    this.mostrarInactivos = !this.mostrarInactivos;
-    this.cargarUsuarios(); // Recargar lista al cambiar el estado del checkbox
-  }
-  // Confirmación del cambio de rol
-  confirmarCambioRol(): void {
-    if (this.usuarioSeleccionado) {
-      this.actualizarRol(this.usuarioSeleccionado); // Actualiza el rol del usuario a administrador
-      this.isConfirmModalVisible = false; // Cierra el modal
-    }
+    this.cargarUsuarios();
   }
 
   toggleSeleccionarTodos(): void {
@@ -254,6 +259,12 @@ export class UsuariosComponent implements OnInit {
       });
 
       await Promise.all(actualizaciones);
+      this.logVisitaService.registrarAccion('transferir bienes entre usuarios', '/usuarios', {
+        usuario_origen_id: this.usuarioOrigenId,
+        usuario_destino_id: this.usuarioDestino,
+        cantidad_bienes: bienesSeleccionados.length,
+        bienes_ids: bienesSeleccionados.map(bien => bien.id)
+      }).subscribe();
       this.message.success('Bienes transferidos correctamente');
       this.cargarBienesDeOrigen(this.usuarioOrigenId);
       this.cargarUsuarios();
@@ -268,6 +279,10 @@ export class UsuariosComponent implements OnInit {
   actualizarRol(usuario: Usuario): void {
     this.usuariosService.updateRol(usuario.id, usuario.ID_ROL).subscribe({
       next: () => {
+        this.logVisitaService.registrarAccion('editar rol de usuario', '/usuarios', {
+          usuario_id: usuario.id,
+          rol_id: usuario.ID_ROL
+        }).subscribe();
         this.message.success('Rol actualizado correctamente');
       },
       error: () => {
@@ -277,19 +292,27 @@ export class UsuariosComponent implements OnInit {
   }
 
   navigateToRegister(): void {
-    window.location.href = '/register'; // Redirige usando un enlace absoluto clásico
+    window.location.href = '/register';
   }
 
   cambiarEstadoUsuario(usuario: Usuario): void {
     if (usuario.estado === 'Activo') {
-      // Verificar si tiene bienes asignados antes de inactivar
       this.usuariosService.getBienesPorUsuario(usuario.id).subscribe({
         next: (bienes) => {
           if (bienes.length > 0) {
             this.message.error('No se puede inactivar un usuario con bienes asignados.');
           } else {
-            usuario.estado = 'Inactivo';
-            this.actualizarEstadoUsuario(usuario);
+            this.modal.confirm({
+              nzTitle: 'Inactivar usuario',
+              nzContent: `El usuario ${usuario.USU} quedara inactivo. Deseas continuar?`,
+              nzOkText: 'Inactivar',
+              nzOkDanger: true,
+              nzCancelText: 'Cancelar',
+              nzOnOk: () => {
+                usuario.estado = 'Inactivo';
+                this.actualizarEstadoUsuario(usuario);
+              }
+            });
           }
         },
         error: () => {
@@ -297,15 +320,26 @@ export class UsuariosComponent implements OnInit {
         }
       });
     } else {
-      // Si está inactivo, simplemente lo activamos
-      usuario.estado = 'Activo';
-      this.actualizarEstadoUsuario(usuario);
+      this.modal.confirm({
+        nzTitle: 'Activar usuario',
+        nzContent: `El usuario ${usuario.USU} volvera a estar activo. Deseas continuar?`,
+        nzOkText: 'Activar',
+        nzCancelText: 'Cancelar',
+        nzOnOk: () => {
+          usuario.estado = 'Activo';
+          this.actualizarEstadoUsuario(usuario);
+        }
+      });
     }
   }
   
   actualizarEstadoUsuario(usuario: Usuario): void {
     this.usuariosService.updateUsuario(usuario.id, { estado: usuario.estado }).subscribe({
       next: () => {
+        this.logVisitaService.registrarAccion('editar estado de usuario', '/usuarios', {
+          usuario_id: usuario.id,
+          estado: usuario.estado
+        }).subscribe();
         this.message.success(`Usuario ${usuario.estado === 'Activo' ? 'activado' : 'inactivado'} correctamente`);
         this.cargarUsuarios(); // Recargar lista de usuarios
       },

@@ -37,12 +37,12 @@
         <form (ngSubmit)="guardarMovimiento()">
           <label for="ubicacion">Ubicación</label>
           <select id="ubicacion" [(ngModel)]="selectedUbicacionId" class="form-select" name="ubicacion" (change)="onUbicacionChange($event)">
-            <option *ngFor="let ubicacion of ubicaciones" [value]="ubicacion.ID_UBICACION">{{ ubicacion.NOMBRE }}</option>
+            <option *ngFor="let ubicacion of ubicaciones" [ngValue]="ubicacion.ID_UBICACION">{{ ubicacion.NOMBRE }}</option>
           </select>
           <div *ngIf="showAmbienteSelect">
             <label for="ambiente">Ambiente</label>
             <select id="ambiente" [(ngModel)]="selectedAmbienteId" class="form-select" name="ambiente">
-              <option *ngFor="let ambiente of ambientes" [value]="ambiente.ID_AMBIENTE">{{ ambiente.NOMBRE_AMBIENTE }}</option>
+              <option *ngFor="let ambiente of ambientes" [ngValue]="ambiente.ID_AMBIENTE">{{ ambiente.NOMBRE_AMBIENTE }}</option>
             </select>
           </div>
           <label for="estado">Estado</label>

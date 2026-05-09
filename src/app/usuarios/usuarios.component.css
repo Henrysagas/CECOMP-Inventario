@@ -157,37 +157,53 @@ input:checked + .slider:before {
   margin-bottom: 20px;
 }
 
-.usuarios-tabs {
-  width: 100%;
-  text-align: left;
-}
-
-.usuarios-tabs ::ng-deep .ant-tabs-nav {
-  margin-bottom: 18px;
-}
-
-.usuarios-tabs ::ng-deep .ant-tabs-tab {
-  color: #8f1f2b;
-  font-weight: 700;
-}
-
-.usuarios-tabs ::ng-deep .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
-  color: #d32f2f;
-}
-
-.usuarios-tabs ::ng-deep .ant-tabs-ink-bar {
-  background: #d32f2f;
+nz-table.tabla-contenedor {
+  border: 0 !important;
+  background-color: transparent !important;
 }
 
 .tab-content {
   text-align: center;
 }
 
-.estado-checkbox {
-  display: inline-flex;
-  margin-bottom: 16px;
+.usuarios-toolbar {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(180px, 0.8fr) auto auto;
+  align-items: end;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 14px;
+  background: #fff9c4;
+  border: 2px solid #d32f2f;
+  border-radius: 6px;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   color: #8f1f2b;
-  font-weight: 600;
+  font-weight: 700;
+  text-align: left;
+}
+
+.filter-field nz-select {
+  width: 100%;
+  font-weight: 400;
+}
+
+.usuarios-summary {
+  margin: 0 0 12px;
+  color: #8f1f2b;
+  font-weight: 700;
+  text-align: left;
+}
+
+.empty-cell {
+  padding: 28px 12px !important;
+  color: #7b1f2a;
+  text-align: center;
+  font-weight: 700;
 }
 
 .acciones-usuario {
@@ -342,7 +358,7 @@ td .btn-danger {
 }
 
 nz-table {
-  border: 3px solid #d32f2f; /* Borde color guinda */
+  border: 0 !important;
   border-collapse: collapse;
   display: block;
   width: 100%;
@@ -405,6 +421,11 @@ nz-table .ant-table-tbody > tr > td {
   }
 
   .movement-filters {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .usuarios-toolbar {
     grid-template-columns: 1fr;
     align-items: stretch;
   }

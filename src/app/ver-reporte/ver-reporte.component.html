@@ -19,7 +19,7 @@
       </p>
     </div>
 
-    <div class="firmas">
+    <div class="firmas" *ngIf="!esReporteInterno()">
       <nz-row nzGutter="16">
         <nz-col nzSpan="8">
           <h5>Recibe Conforme</h5>

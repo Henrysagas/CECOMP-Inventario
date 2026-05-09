@@ -19,16 +19,102 @@ video {
   max-width: 100%;
 }
 
+:root {
+  --table-header-bg: #d32f2f;
+  --table-header-color: #ffffff;
+  --table-bg: #fffacd;
+  --table-row-odd: #fff9c491;
+  --table-row-even: #fffacd;
+  --table-hover: #ffeaea;
+  --table-border: #d32f2f;
+  --table-cell-border: #ddd;
+  --table-font-size: clamp(1.08rem, 1rem + 0.28vw, 1.28rem);
+}
+
 .table,
-.ant-table {
-  font-size: clamp(1rem, 0.94rem + 0.22vw, 1.15rem);
+.transfer-table,
+.ant-table,
+table.tabla-contenedor,
+.tabla-contenedor table {
+  background-color: var(--table-bg) !important;
+  border-collapse: collapse;
+  font-size: var(--table-font-size) !important;
+  line-height: 1.4 !important;
+}
+
+.table,
+.transfer-table,
+table.tabla-contenedor,
+nz-table.tabla-contenedor,
+.tabla-contenedor .ant-table {
+  border: 3px solid var(--table-border) !important;
+}
+
+.tabla-contenedor {
+  background-color: var(--table-bg) !important;
 }
 
 .table th,
+.transfer-table th,
+.tabla-contenedor th,
+.ant-table-thead > tr > th {
+  background-color: var(--table-header-bg) !important;
+  color: var(--table-header-color) !important;
+  font-size: var(--table-font-size) !important;
+  line-height: 1.35 !important;
+  padding: 12px 14px !important;
+  text-align: center;
+}
+
 .table td,
-.ant-table-thead > tr > th,
+.transfer-table td,
+.tabla-contenedor td,
 .ant-table-tbody > tr > td {
-  line-height: 1.35;
+  font-size: var(--table-font-size) !important;
+  line-height: 1.4 !important;
+  padding: 12px 14px !important;
+  border-bottom: 1px solid var(--table-cell-border) !important;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.table tbody tr:nth-child(even),
+.transfer-table tbody tr:nth-child(even),
+.tabla-contenedor tbody tr:nth-child(even),
+.ant-table-tbody > tr:nth-child(even) > td {
+  background-color: var(--table-row-even) !important;
+}
+
+.table tbody tr:nth-child(odd),
+.transfer-table tbody tr:nth-child(odd),
+.tabla-contenedor tbody tr:nth-child(odd),
+.ant-table-tbody > tr:nth-child(odd) > td {
+  background-color: var(--table-row-odd) !important;
+}
+
+.table tbody tr:nth-child(even) > td,
+.transfer-table tbody tr:nth-child(even) > td,
+.tabla-contenedor tbody tr:nth-child(even) > td {
+  background-color: var(--table-row-even) !important;
+}
+
+.table tbody tr:nth-child(odd) > td,
+.transfer-table tbody tr:nth-child(odd) > td,
+.tabla-contenedor tbody tr:nth-child(odd) > td {
+  background-color: var(--table-row-odd) !important;
+}
+
+.table tbody tr:hover,
+.transfer-table tbody tr:hover,
+.tabla-contenedor tbody tr:hover,
+.ant-table-tbody > tr:hover > td {
+  background-color: var(--table-hover) !important;
+}
+
+.table tbody tr:hover > td,
+.transfer-table tbody tr:hover > td,
+.tabla-contenedor tbody tr:hover > td {
+  background-color: var(--table-hover) !important;
 }
 
 .view-actions {
