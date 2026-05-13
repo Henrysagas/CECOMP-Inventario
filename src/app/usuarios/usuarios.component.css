@@ -7,7 +7,7 @@
   width: 100%;
   text-align: center;
   padding: clamp(12px, 2vw, 20px);
-  background-color: #ffffe0; /* Amarillo claro */
+  background-color: #fffacd; /* Amarillo claro */
 }
 
 
@@ -173,7 +173,7 @@ nz-table.tabla-contenedor {
   gap: 12px;
   margin-bottom: 12px;
   padding: 14px;
-  background: #fff9c4;
+  background: #fffacd;
   border: 2px solid #d32f2f;
   border-radius: 6px;
 }
@@ -211,6 +211,26 @@ nz-table.tabla-contenedor {
   gap: 6px;
 }
 
+.editar-usuario-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.editar-usuario-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #8f1f2b;
+  font-weight: 700;
+  text-align: left;
+}
+
+.editar-usuario-form nz-select {
+  width: 100%;
+  font-weight: 400;
+}
+
 .transfer-panel {
   display: flex;
   flex-direction: column;
@@ -241,7 +261,7 @@ nz-table.tabla-contenedor {
   align-items: end;
   gap: 12px;
   padding: 14px;
-  background: #fff9c4;
+  background: #fffacd;
   border: 2px solid #d32f2f;
   border-radius: 6px;
 }
@@ -287,7 +307,7 @@ nz-table.tabla-contenedor {
   background-color: #fffacd; /* Amarillo claro */
 }
 .tabla-contenedor tbody tr:nth-child(odd) {
-  background-color: #fff9c491; /* Amarillo más oscuro */
+  background-color: #fffacd; /* Amarillo más oscuro */
 }
 nz-table.tabla-contenedor .ant-table-tbody > tr > td,
 nz-table.tabla-contenedor .ant-table-thead > tr > th {
@@ -431,6 +451,10 @@ nz-table .ant-table-tbody > tr > td {
   }
 
   .acciones-usuario {
+    grid-template-columns: 1fr;
+  }
+
+  .editar-usuario-form {
     grid-template-columns: 1fr;
   }
 

@@ -3,7 +3,9 @@ html,
 body {
   margin: 0;
   min-height: 100%;
+  width: 100%;
   background-color: #fffacd;
+  overflow: hidden;
 }
 
 *,
@@ -16,6 +18,13 @@ img,
 svg,
 canvas,
 video {
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
   max-width: 100%;
 }
 
@@ -120,6 +129,112 @@ nz-table.tabla-contenedor,
 .view-actions {
   width: 100%;
   display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
   justify-content: flex-start;
   margin-bottom: 12px;
+}
+
+.ant-layout,
+.ant-layout-content {
+  min-width: 0;
+}
+
+.ant-tabs {
+  min-width: 0;
+}
+
+.ant-tabs-nav {
+  max-width: 100%;
+}
+
+.ant-tabs-nav-wrap {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ant-tabs-nav-list {
+  min-width: max-content;
+}
+
+.tabla-contenedor,
+.table-responsive,
+nz-table {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ant-table-wrapper,
+.ant-table,
+.ant-table-container,
+.ant-table-content {
+  max-width: 100%;
+}
+
+.ant-table-content {
+  overflow-x: auto !important;
+}
+
+.ant-modal {
+  max-width: calc(100vw - 24px);
+}
+
+.ant-modal-content {
+  max-height: calc(100dvh - 24px);
+  overflow: auto;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --table-font-size: 0.94rem;
+  }
+
+  h1 {
+    font-size: clamp(1.7rem, 1.35rem + 2vw, 2.2rem);
+    line-height: 1.15;
+  }
+
+  h2 {
+    font-size: clamp(1.35rem, 1.1rem + 1.2vw, 1.75rem);
+    line-height: 1.2;
+  }
+
+  .table th,
+  .transfer-table th,
+  .tabla-contenedor th,
+  .ant-table-thead > tr > th {
+    padding: 9px 10px !important;
+  }
+
+  .table td,
+  .transfer-table td,
+  .tabla-contenedor td,
+  .ant-table-tbody > tr > td {
+    padding: 9px 10px !important;
+  }
+
+  .ant-tabs-tab {
+    padding: 8px 0 !important;
+  }
+
+  .ant-tabs-tab-btn {
+    font-size: 0.98rem !important;
+    white-space: nowrap;
+  }
+
+  .ant-pagination {
+    flex-wrap: wrap;
+  }
+
+  .ant-picker-panels {
+    flex-direction: column;
+  }
+
+  .view-actions > *,
+  .btn,
+  button {
+    max-width: 100%;
+  }
 }

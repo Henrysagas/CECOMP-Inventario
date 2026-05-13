@@ -24,7 +24,7 @@
             <label for="responsable">Nuevo responsable</label>
             <select id="responsable" [(ngModel)]="selectedUsuarioId" name="responsable" required>
               <option *ngIf="mostrarResponsableActualNoAsignable()" [ngValue]="bien.ID_USUARIO" disabled>
-                {{ bien.usuario || 'Responsable actual no asignable' }}
+                {{ obtenerNombreUsuario(bien.usuario) || 'Responsable actual no asignable' }}
               </option>
               <option *ngFor="let usuario of usuariosAdministradores" [ngValue]="usuario.id">
                 {{ usuario.NOMBRES }} {{ usuario.APELLIDOS }}
@@ -44,6 +44,9 @@
       </div>
 
       <div class="tabla-contenedor" *ngIf="historialOrdenado.length > 0; else sinHistorial">
+        <div class="pagination-summary">
+          Mostrando {{ inicioResponsables }}-{{ finResponsables }} de {{ historialOrdenado.length }} responsables
+        </div>
         <table class="table table-striped">
           <thead>
             <tr>
@@ -54,18 +57,24 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let item of historialOrdenado" [class.current-row]="item.vigente">
+            <tr *ngFor="let item of responsablesPaginados" [class.current-row]="item.vigente">
               <td>{{ obtenerNombreResponsable(item) }}</td>
               <td>{{ item.fecha_inicio | date }}</td>
               <td>{{ item.fecha_fin ? (item.fecha_fin | date) : 'Actualidad' }}</td>
               <td>
                 <span class="table-pill" [class.table-pill--current]="item.vigente">
-                  {{ item.vigente ? 'Actual' : 'Anterior' }}
+                  {{ obtenerEstadoResponsable(item) }}
                 </span>
               </td>
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <div class="pagination-controls" *ngIf="historialOrdenado.length > tamanioPaginaResponsables">
+        <button class="btn btn-danger" (click)="irPaginaResponsablesAnterior()" [disabled]="paginaResponsables === 1">Anterior</button>
+        <span>Pagina {{ paginaResponsables }} de {{ totalPaginasResponsables }}</span>
+        <button class="btn btn-danger" (click)="irPaginaResponsablesSiguiente()" [disabled]="paginaResponsables === totalPaginasResponsables">Siguiente</button>
       </div>
 
       <ng-template #sinHistorial>

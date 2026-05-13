@@ -10,7 +10,7 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { BienService } from '../services/bien.service';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
@@ -18,6 +18,7 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { LogVisitaService } from '../services/log-visita.service';
+import { RolUsuarioService } from '../services/rol-usuario.service';
 
 
 @Component({
@@ -43,11 +44,10 @@ export class UsuariosComponent implements OnInit {
   busquedaBienes = '';
   categoriaFiltro: number | null = null;
   estadoSeleccionFiltro: 'todos' | 'seleccionados' | 'pendientes' = 'todos';
+  usuarioEditando: Partial<Usuario> | null = null;
+  guardandoUsuario = false;
 
-  roles = [
-    { id: 1, nombre: 'Administrador' },
-    { id: 2, nombre: 'Usuario Normal' }
-  ];
+  roles: Array<{ id: number; nombre: string }> = [];
 
   get usuariosActivos(): Usuario[] {
     return this.usuarios.filter(u => u.estado !== 'Inactivo' && u.id !== this.usuarioOrigenId);
@@ -112,11 +112,28 @@ export class UsuariosComponent implements OnInit {
     private bienService: BienService,
     private message: NzMessageService,
     private logVisitaService: LogVisitaService,
-    private modal: NzModalService
+    private modal: NzModalService,
+    private router: Router,
+    private rolUsuarioService: RolUsuarioService
   ) {}
 
   ngOnInit(): void {
+    this.cargarRoles();
     this.cargarUsuarios();
+  }
+
+  cargarRoles(): void {
+    this.rolUsuarioService.getRoles().subscribe({
+      next: (roles) => {
+        this.roles = roles.map(rol => ({
+          id: rol.ID_ROL_USUARIO,
+          nombre: rol.NOMBRE_ROL
+        }));
+      },
+      error: () => {
+        this.message.error('Error al cargar roles');
+      }
+    });
   }
 
   cargarUsuarios(): void {
@@ -291,8 +308,60 @@ export class UsuariosComponent implements OnInit {
     });
   }
 
+  esRolAdministrador(rolId: number | undefined | null): boolean {
+    const rol = this.roles.find(item => item.id === rolId);
+    return this.normalizarTexto(rol?.nombre).includes('admin');
+  }
+
   navigateToRegister(): void {
-    window.location.href = '/register';
+    this.router.navigate(['/register']);
+  }
+
+  abrirEditarUsuario(usuario: Usuario): void {
+    this.usuarioEditando = {
+      id: usuario.id,
+      ID_ROL: usuario.ID_ROL,
+      NOMBRES: usuario.NOMBRES,
+      APELLIDOS: usuario.APELLIDOS,
+      USU: usuario.USU,
+      dni: usuario.dni,
+      cargo: usuario.cargo,
+      estado: usuario.estado
+    };
+  }
+
+  cancelarEdicionUsuario(): void {
+    this.usuarioEditando = null;
+    this.guardandoUsuario = false;
+  }
+
+  guardarUsuarioEditado(): void {
+    if (!this.usuarioEditando?.id) {
+      return;
+    }
+
+    if (!this.usuarioEditando.NOMBRES || !this.usuarioEditando.APELLIDOS || !this.usuarioEditando.USU) {
+      this.message.warning('Completa nombres, apellidos y usuario.');
+      return;
+    }
+
+    this.guardandoUsuario = true;
+    const { id, NOMBRES, APELLIDOS, USU, dni, cargo, ID_ROL } = this.usuarioEditando;
+
+    this.usuariosService.updateUsuario(id, { NOMBRES, APELLIDOS, USU, dni, cargo, ID_ROL }).subscribe({
+      next: () => {
+        this.logVisitaService.registrarAccion('editar usuario', '/usuarios', {
+          usuario_id: id
+        }).subscribe();
+        this.message.success('Usuario actualizado correctamente');
+        this.cancelarEdicionUsuario();
+        this.cargarUsuarios();
+      },
+      error: () => {
+        this.guardandoUsuario = false;
+        this.message.error('Error al actualizar el usuario');
+      }
+    });
   }
 
   cambiarEstadoUsuario(usuario: Usuario): void {

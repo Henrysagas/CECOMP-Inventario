@@ -8,6 +8,9 @@
       <h3 *ngIf="showAgregarMovimiento">Agregar Movimiento</h3>
       <div *ngIf="!showAgregarMovimiento">
         <div *ngIf="movimientos && movimientos.length > 0; else noMovimientos">
+          <div class="pagination-summary">
+            Mostrando {{ inicioMovimientos }}-{{ finMovimientos }} de {{ movimientos.length }} movimientos
+          </div>
           <div class="tabla-contenedor">
             <table class="table table-striped">
               <thead>
@@ -18,13 +21,18 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let movimiento of movimientos">
+                <tr *ngFor="let movimiento of movimientosPaginados">
                   <td>{{ movimiento.FECHA_MODIFICACION | date }}</td>
                   <td>{{ movimiento.ESTADO }}</td>
                   <td>{{ movimiento.ambiente?.ubicacion?.NOMBRE }} - {{ movimiento.ambiente?.NOMBRE_AMBIENTE }}</td>
                 </tr>
               </tbody>
             </table>
+          </div>
+          <div class="pagination-controls" *ngIf="movimientos.length > tamanioPaginaMovimientos">
+            <button class="btn btn-search" (click)="irPaginaMovimientosAnterior()" [disabled]="paginaMovimientos === 1">Anterior</button>
+            <span>Pagina {{ paginaMovimientos }} de {{ totalPaginasMovimientos }}</span>
+            <button class="btn btn-search" (click)="irPaginaMovimientosSiguiente()" [disabled]="paginaMovimientos === totalPaginasMovimientos">Siguiente</button>
           </div>
         </div>
         <ng-template #noMovimientos>

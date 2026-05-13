@@ -28,6 +28,7 @@ import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 import { TipoModalidad } from '../models/tipo-modalidad';
 import { TipoModalidadService } from '../services/tipo-modalidad.service';
 import { LogVisitaService } from '../services/log-visita.service';
+import { AuthService } from '../auth.service';
 
 interface ConsultaGenerada {
   id: number;
@@ -58,6 +59,7 @@ interface ConsultaGenerada {
 })
 export class ReporteComponent implements OnInit {
 
+  isAdmin = false;
   
   transferReportData: Modalidad[] = [];
   filteredTransferReportData: Modalidad[] = [];
@@ -96,10 +98,14 @@ export class ReporteComponent implements OnInit {
     private bienService: BienService,
     private ambienteService: AmbienteService,
     private tipoModalidadService: TipoModalidadService,
-    private logVisitaService: LogVisitaService
+    private logVisitaService: LogVisitaService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
+    this.authService.isAdmin$.subscribe(isAdmin => {
+      this.isAdmin = isAdmin;
+    });
     this.consultaDate = new Date();
     this.loadTransferReports();
     this.loadDirecciones();
@@ -179,6 +185,10 @@ export class ReporteComponent implements OnInit {
   
 
   generarReporte(tipo: string): void {
+    if (!this.isAdmin) {
+      return;
+    }
+
     if (tipo === 'transferencia') {
       this.router.navigate(['/transferencia']);
     } else {

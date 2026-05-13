@@ -177,7 +177,7 @@ h2 {
   background-color: #fffacd; /* Amarillo claro */
 }
 .table tbody tr:nth-child(odd) {
-  background-color: #fff9c491; /* Amarillo más oscuro */
+  background-color: #fffacd; /* Amarillo más oscuro */
 }
 .table td {
   background-color: inherit; /* Mantener el color alterno */

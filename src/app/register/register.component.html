@@ -36,9 +36,16 @@
 
         <nz-form-item>
           <nz-form-label [nzSpan]="6">DNI</nz-form-label>
-          <nz-form-control [nzSpan]="14">
+          <nz-form-control [nzSpan]="14" nzErrorTip="El DNI debe tener 8 numeros">
             <nz-input-group nzPrefixIcon="idcard">
-              <input nz-input formControlName="dni" placeholder="DNI" />
+              <input
+                nz-input
+                formControlName="dni"
+                placeholder="DNI"
+                inputmode="numeric"
+                maxlength="8"
+                pattern="[0-9]*"
+                (input)="limitarDni($event)" />
             </nz-input-group>
           </nz-form-control>
         </nz-form-item>
@@ -76,9 +83,12 @@
         <nz-form-item>
           <nz-form-label [nzSpan]="6">Rol</nz-form-label>
           <nz-form-control [nzSpan]="14">
-            <nz-select formControlName="rol" placeholder="Rol">
-              <nz-option nzValue="1" nzLabel="Administrador"></nz-option>
-              <nz-option nzValue="2" nzLabel="Usuario"></nz-option>
+            <nz-select formControlName="rol" placeholder="Rol" [nzLoading]="cargandoRoles">
+              <nz-option
+                *ngFor="let rol of roles"
+                [nzValue]="rol.ID_ROL_USUARIO"
+                [nzLabel]="rol.NOMBRE_ROL">
+              </nz-option>
             </nz-select>
           </nz-form-control>
         </nz-form-item>
@@ -86,7 +96,7 @@
     </div>
 
     <nz-form-item class="register-actions">
-      <button nz-button nzType="primary" class="register-form-button" [disabled]="!registerForm.valid">
+      <button nz-button nzType="primary" class="register-form-button" [disabled]="!registerForm.valid || cargandoRoles">
         Registrarse
       </button>
       <button nz-button type="button" class="register-form-button secondary" (click)="volverUsuarios()">

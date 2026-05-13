@@ -7,7 +7,7 @@
 }
 
 .add-form {
-  background-color: #ffffe0;
+  background-color: #fffacd;
   border: 1px solid #d82f4b;
   border-radius: 8px;
   padding: 15px;
@@ -61,7 +61,7 @@ select:focus {
 }
 
 .item {
-  background-color: #ffffe0; /* Amarillo claro */
+  background-color: #fffacd; /* Amarillo claro */
   border-radius: 8px;
   padding: 15px;
   margin-bottom: 10px;
@@ -184,7 +184,7 @@ button.cancel {
 }
 
 button.cancel:hover {
-  background-color: #ffffe0; /* Amarillo más claro */
+  background-color: #fffacd; /* Amarillo más claro */
 }
 
 .btn-add {
@@ -208,7 +208,7 @@ button.cancel:hover {
 }
 
 .btn.btn-back:hover {
-  background-color: #ffffe0; /* Amarillo más claro */
+  background-color: #fffacd; /* Amarillo más claro */
 }
 
 
@@ -265,7 +265,7 @@ h2 {
 
 .selection-summary span {
   padding: 8px 12px;
-  background-color: #fff7d1;
+  background-color: #fffacd;
   border: 1px solid #e5c7c7;
   border-radius: 6px;
 }
@@ -312,7 +312,7 @@ h2 {
   gap: 4px;
   padding: 12px;
   text-align: left;
-  background-color: #ffffe0;
+  background-color: #fffacd;
   color: #333;
   border: 1px solid #d82f4b;
   border-radius: 6px;
@@ -335,6 +335,25 @@ h2 {
 .item-card.selected small,
 .item-card:hover small {
   color: white;
+}
+
+.rename-panel {
+  margin-top: 18px;
+  padding: 16px;
+  background-color: #fffacd;
+  border: 1px solid #d82f4b;
+  border-radius: 6px;
+  text-align: left;
+}
+
+.rename-panel h4 {
+  margin: 0 0 10px;
+  color: #d82f4b;
+  font-size: 1.05rem;
+}
+
+.rename-panel .button-group {
+  justify-content: flex-start;
 }
 
 button:disabled {

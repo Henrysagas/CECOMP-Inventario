@@ -52,6 +52,8 @@ export class HistorialMovimientosComponent implements OnInit {
   isEditing = false;
   estados = ['Nuevo', 'Bueno', 'Regular', 'Deficiente', 'Malo', 'RAEE/Chatarra'];
   movimientos: Detalle[] = [];
+  paginaMovimientos = 1;
+  tamanioPaginaMovimientos = 5;
   isLoading = false;
   usuariosAdministradores: Usuario[] = [];
   historial: Historial[] = [];
@@ -156,6 +158,35 @@ export class HistorialMovimientosComponent implements OnInit {
     }
   }
 
+  get movimientosPaginados(): Detalle[] {
+    const inicio = (this.paginaMovimientos - 1) * this.tamanioPaginaMovimientos;
+    return this.movimientos.slice(inicio, inicio + this.tamanioPaginaMovimientos);
+  }
+
+  get totalPaginasMovimientos(): number {
+    return Math.max(1, Math.ceil(this.movimientos.length / this.tamanioPaginaMovimientos));
+  }
+
+  get inicioMovimientos(): number {
+    return this.movimientos.length === 0 ? 0 : (this.paginaMovimientos - 1) * this.tamanioPaginaMovimientos + 1;
+  }
+
+  get finMovimientos(): number {
+    return Math.min(this.paginaMovimientos * this.tamanioPaginaMovimientos, this.movimientos.length);
+  }
+
+  irPaginaMovimientosAnterior(): void {
+    if (this.paginaMovimientos > 1) {
+      this.paginaMovimientos--;
+    }
+  }
+
+  irPaginaMovimientosSiguiente(): void {
+    if (this.paginaMovimientos < this.totalPaginasMovimientos) {
+      this.paginaMovimientos++;
+    }
+  }
+
   private cargarVista(bienId: number): void {
     this.presenter.cargarVista(bienId).subscribe({
       next: viewModel => {
@@ -164,6 +195,7 @@ export class HistorialMovimientosComponent implements OnInit {
         this.selectedCategoria = viewModel.selectedCategoria;
         this.ubicaciones = viewModel.ubicaciones;
         this.movimientos = viewModel.movimientos;
+        this.ajustarPaginaMovimientos();
         this.usuariosAdministradores = viewModel.usuariosAdministradores;
         this.historial = viewModel.historial;
       },
@@ -176,8 +208,13 @@ export class HistorialMovimientosComponent implements OnInit {
       next: movimientos => {
         this.movimientos = movimientos;
         this.bien.movimientos = movimientos;
+        this.ajustarPaginaMovimientos();
       },
       error: error => console.error('Error al cargar movimientos:', error)
     });
+  }
+
+  private ajustarPaginaMovimientos(): void {
+    this.paginaMovimientos = Math.min(Math.max(this.paginaMovimientos, 1), this.totalPaginasMovimientos);
   }
 }

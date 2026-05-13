@@ -40,6 +40,9 @@ export class UbicacionesComponent implements OnInit {
   isAddingUbicacion = false;
   isAddingAmbiente = false;
   isAddingDireccion = false;
+  isChangingName = false;
+  changingNameType: 'direccion' | 'ubicacion' | 'ambiente' | null = null;
+  changingNameValue = '';
   newUbicacion: Ubicacion = { ID_UBICACION: 0, NOMBRE: '', CODIGO: '', DIRECCION: 0 };
   newAmbiente: Ambiente = { ID_AMBIENTE: 0, ID_UBICACION: 0, NOMBRE_AMBIENTE: '' };
   newDireccion: DireccionModel = { id: 0, nombre: '' };
@@ -106,14 +109,17 @@ export class UbicacionesComponent implements OnInit {
   }
 
   mostrarAgregarUbicacion(): void {
+    this.cancelarCambioNombre();
     this.isAddingUbicacion = true;
   }
 
   mostrarAgregarAmbiente(): void {
+    this.cancelarCambioNombre();
     this.isAddingAmbiente = true;
   }
 
   mostrarAgregarDireccion(): void {
+    this.cancelarCambioNombre();
     this.isAddingDireccion = true;
   }
 
@@ -201,10 +207,62 @@ export class UbicacionesComponent implements OnInit {
     });
   }
 
-  cambiarNombreDireccion(direccion: DireccionModel): void {
-    const nuevoNombre = this.pedirNuevoNombre('direccion', direccion.nombre);
+  mostrarCambiarNombreDireccion(direccion: DireccionModel): void {
+    this.selectedDireccion = direccion;
+    this.iniciarCambioNombre('direccion', direccion.nombre);
+  }
 
-    if (!nuevoNombre || nuevoNombre === direccion.nombre.trim()) {
+  mostrarCambiarNombreUbicacion(ubicacion: Ubicacion): void {
+    this.selectedUbicacion = ubicacion;
+    this.iniciarCambioNombre('ubicacion', ubicacion.NOMBRE);
+  }
+
+  mostrarCambiarNombreAmbiente(ambiente: Ambiente): void {
+    this.selectedAmbiente = ambiente;
+    this.iniciarCambioNombre('ambiente', ambiente.NOMBRE_AMBIENTE);
+  }
+
+  guardarCambioNombre(): void {
+    const nuevoNombre = this.changingNameValue.trim();
+
+    if (!nuevoNombre) {
+      this.message.warning('El nombre no puede estar vacio.');
+      return;
+    }
+
+    if (this.changingNameType === 'direccion') {
+      this.guardarNombreDireccion(nuevoNombre);
+    } else if (this.changingNameType === 'ubicacion') {
+      this.guardarNombreUbicacion(nuevoNombre);
+    } else if (this.changingNameType === 'ambiente') {
+      this.guardarNombreAmbiente(nuevoNombre);
+    }
+  }
+
+  cancelarCambioNombre(): void {
+    this.isChangingName = false;
+    this.changingNameType = null;
+    this.changingNameValue = '';
+  }
+
+  private iniciarCambioNombre(tipo: 'direccion' | 'ubicacion' | 'ambiente', nombreActual: string): void {
+    this.isAddingUbicacion = false;
+    this.isAddingAmbiente = false;
+    this.isAddingDireccion = false;
+    this.isChangingName = true;
+    this.changingNameType = tipo;
+    this.changingNameValue = nombreActual;
+  }
+
+  private guardarNombreDireccion(nuevoNombre: string): void {
+    const direccion = this.selectedDireccion;
+
+    if (!direccion) {
+      return;
+    }
+
+    if (nuevoNombre === direccion.nombre.trim()) {
+      this.cancelarCambioNombre();
       return;
     }
 
@@ -212,6 +270,7 @@ export class UbicacionesComponent implements OnInit {
       (direccionActualizada: DireccionModel) => {
         this.selectedDireccion = direccionActualizada;
         this.cargarDirecciones();
+        this.cancelarCambioNombre();
         this.message.success('Nombre de direccion actualizado correctamente.');
       },
       error => {
@@ -221,10 +280,15 @@ export class UbicacionesComponent implements OnInit {
     );
   }
 
-  cambiarNombreUbicacion(ubicacion: Ubicacion): void {
-    const nuevoNombre = this.pedirNuevoNombre('ubicacion', ubicacion.NOMBRE);
+  private guardarNombreUbicacion(nuevoNombre: string): void {
+    const ubicacion = this.selectedUbicacion;
 
-    if (!nuevoNombre || nuevoNombre === ubicacion.NOMBRE.trim()) {
+    if (!ubicacion) {
+      return;
+    }
+
+    if (nuevoNombre === ubicacion.NOMBRE.trim()) {
+      this.cancelarCambioNombre();
       return;
     }
 
@@ -234,6 +298,7 @@ export class UbicacionesComponent implements OnInit {
         if (this.selectedDireccion) {
           this.cargarUbicaciones(this.selectedDireccion);
         }
+        this.cancelarCambioNombre();
         this.message.success('Nombre de ubicacion actualizado correctamente.');
       },
       error => {
@@ -243,10 +308,15 @@ export class UbicacionesComponent implements OnInit {
     );
   }
 
-  cambiarNombreAmbiente(ambiente: Ambiente): void {
-    const nuevoNombre = this.pedirNuevoNombre('ambiente', ambiente.NOMBRE_AMBIENTE);
+  private guardarNombreAmbiente(nuevoNombre: string): void {
+    const ambiente = this.selectedAmbiente;
 
-    if (!nuevoNombre || nuevoNombre === ambiente.NOMBRE_AMBIENTE.trim()) {
+    if (!ambiente) {
+      return;
+    }
+
+    if (nuevoNombre === ambiente.NOMBRE_AMBIENTE.trim()) {
+      this.cancelarCambioNombre();
       return;
     }
 
@@ -260,6 +330,7 @@ export class UbicacionesComponent implements OnInit {
         if (this.selectedUbicacion) {
           this.verAmbientes(this.selectedUbicacion);
         }
+        this.cancelarCambioNombre();
         this.message.success('Nombre de ambiente actualizado correctamente.');
       },
       error => {
@@ -320,23 +391,6 @@ export class UbicacionesComponent implements OnInit {
     );
   }
 
-  private pedirNuevoNombre(tipo: string, nombreActual: string): string | null {
-    const nuevoNombre = window.prompt(`Nuevo nombre de ${tipo}:`, nombreActual);
-
-    if (nuevoNombre === null) {
-      return null;
-    }
-
-    const nombreLimpio = nuevoNombre.trim();
-
-    if (!nombreLimpio) {
-      this.message.warning('El nombre no puede estar vacio.');
-      return null;
-    }
-
-    return nombreLimpio;
-  }
-
   volverADirecciones(): void {
     this.selectedDireccion = null;
     this.ubicaciones = [];
@@ -355,6 +409,7 @@ export class UbicacionesComponent implements OnInit {
     this.isAddingUbicacion = false;
     this.isAddingAmbiente = false;
     this.isAddingDireccion = false;
+    this.cancelarCambioNombre();
   }
   
 }

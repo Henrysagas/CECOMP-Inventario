@@ -44,8 +44,17 @@
 
     <div class="button-group">
       <button [disabled]="!selectedDireccion" (click)="selectedDireccion && cargarUbicaciones(selectedDireccion)">Ver Ubicaciones</button>
-      <button [disabled]="!selectedDireccion" (click)="selectedDireccion && cambiarNombreDireccion(selectedDireccion)">Cambiar Nombre</button>
+      <button [disabled]="!selectedDireccion" (click)="selectedDireccion && mostrarCambiarNombreDireccion(selectedDireccion)">Cambiar Nombre</button>
       <button class="cancel" [disabled]="!selectedDireccion" (click)="selectedDireccion && eliminarDireccion(selectedDireccion.id)">Eliminar Direccion</button>
+    </div>
+
+    <div class="rename-panel" *ngIf="isChangingName && changingNameType === 'direccion'">
+      <h4>Cambiar nombre de direccion</h4>
+      <input type="text" placeholder="Nuevo nombre" [(ngModel)]="changingNameValue" class="form-control" (keyup.enter)="guardarCambioNombre()">
+      <div class="button-group">
+        <button (click)="guardarCambioNombre()">Guardar</button>
+        <button class="cancel" (click)="cancelarCambioNombre()">Cancelar</button>
+      </div>
     </div>
   </section>
 
@@ -80,8 +89,17 @@
 
     <div class="button-group">
       <button [disabled]="!selectedUbicacion" (click)="selectedUbicacion && verAmbientes(selectedUbicacion)">Ver Ambientes</button>
-      <button [disabled]="!selectedUbicacion" (click)="selectedUbicacion && cambiarNombreUbicacion(selectedUbicacion)">Cambiar Nombre</button>
+      <button [disabled]="!selectedUbicacion" (click)="selectedUbicacion && mostrarCambiarNombreUbicacion(selectedUbicacion)">Cambiar Nombre</button>
       <button class="cancel" [disabled]="!selectedUbicacion" (click)="selectedUbicacion && eliminarUbicacion(selectedUbicacion.ID_UBICACION)">Eliminar Ubicacion</button>
+    </div>
+
+    <div class="rename-panel" *ngIf="isChangingName && changingNameType === 'ubicacion'">
+      <h4>Cambiar nombre de ubicacion</h4>
+      <input type="text" placeholder="Nuevo nombre" [(ngModel)]="changingNameValue" class="form-control" (keyup.enter)="guardarCambioNombre()">
+      <div class="button-group">
+        <button (click)="guardarCambioNombre()">Guardar</button>
+        <button class="cancel" (click)="cancelarCambioNombre()">Cancelar</button>
+      </div>
     </div>
   </section>
 
@@ -116,8 +134,17 @@
     </div>
 
     <div class="button-group">
-      <button [disabled]="!selectedAmbiente" (click)="selectedAmbiente && cambiarNombreAmbiente(selectedAmbiente)">Cambiar Nombre</button>
+      <button [disabled]="!selectedAmbiente" (click)="selectedAmbiente && mostrarCambiarNombreAmbiente(selectedAmbiente)">Cambiar Nombre</button>
       <button class="cancel" [disabled]="!selectedAmbiente" (click)="selectedAmbiente && eliminarAmbiente(selectedAmbiente.ID_AMBIENTE)">Eliminar Ambiente</button>
+    </div>
+
+    <div class="rename-panel" *ngIf="isChangingName && changingNameType === 'ambiente'">
+      <h4>Cambiar nombre de ambiente</h4>
+      <input type="text" placeholder="Nuevo nombre" [(ngModel)]="changingNameValue" class="form-control" (keyup.enter)="guardarCambioNombre()">
+      <div class="button-group">
+        <button (click)="guardarCambioNombre()">Guardar</button>
+        <button class="cancel" (click)="cancelarCambioNombre()">Cancelar</button>
+      </div>
     </div>
   </section>
 

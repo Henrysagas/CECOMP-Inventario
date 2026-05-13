@@ -29,7 +29,7 @@ export const routes: Routes = [
   { path: 'detalles/:id', component: DetallesComponent, canActivate: [authGuard], data: { role: 'admin' } },
   { path: 'categorias', component: CategoriasComponent, canActivate: [authGuard], data: { role: 'admin' } },
   { path: 'ambientes', component: UbicacionesComponent, canActivate: [authGuard], data: { role: 'admin' } },
-  { path: 'reportes', component: ReporteComponent, canActivate: [authGuard], data: { role: 'admin' } },
+  { path: 'reportes', component: ReporteComponent, canActivate: [authGuard] },
   { path: 'transferencia', component: TransferenciaComponent, canActivate: [authGuard], data: { role: 'admin' } },
   { path: 'register', component: RegisterComponent, canActivate: [authGuard], data: { role: 'admin' }},
   { path: 'usuarios', component: UsuariosComponent, canActivate: [authGuard], data: { role: 'admin' }},

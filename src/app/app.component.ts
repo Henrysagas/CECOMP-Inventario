@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NavigationEnd, RouterLink, RouterOutlet } from '@angular/router';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -16,8 +16,9 @@ import { LogVisitaService } from './services/log-visita.service';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   isCollapsed = false;
+  isMobile = false;
   isLoggedIn = false; // Estado inicial de inicio de sesión
   isAdmin: boolean = false; // Estado inicial para el rol de administrador
   constructor(
@@ -46,6 +47,39 @@ export class AppComponent {
         }
       });
   }
+
+  ngOnInit(): void {
+    this.syncViewportState();
+  }
+
+  @HostListener('window:resize')
+  onResize(): void {
+    this.syncViewportState();
+  }
+
+  toggleSidebar(): void {
+    this.isCollapsed = !this.isCollapsed;
+  }
+
+  closeMobileMenu(): void {
+    if (this.isMobile) {
+      this.isCollapsed = true;
+    }
+  }
+
+  private syncViewportState(): void {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const wasMobile = this.isMobile;
+    this.isMobile = window.innerWidth <= 768;
+
+    if (this.isMobile && !wasMobile) {
+      this.isCollapsed = true;
+    }
+  }
+
   gestionarSesion() {
     if (this.isLoggedIn) {
       this.logVisitaService.registrarVisita(this.router.url, 'cerrar sesion').subscribe();

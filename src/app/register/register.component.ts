@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators, NonNullableFormBuilder, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';
@@ -11,6 +11,8 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { LogVisitaService } from '../services/log-visita.service';
+import { RolUsuario } from '../models/rol-usuario';
+import { RolUsuarioService } from '../services/rol-usuario.service';
 
 // Validador personalizado para contraseñas coincidentes
 function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
@@ -34,17 +36,20 @@ function passwordMatchValidator(control: AbstractControl): ValidationErrors | nu
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css']
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit {
+  roles: RolUsuario[] = [];
+  cargandoRoles = false;
+
   registerForm: FormGroup = this.fb.group({
     nombres: ['', [Validators.required]],
     apellidos: ['', [Validators.required]],
     cargo: ['', [Validators.required]],
-    dni: ['', [Validators.required]],
+    dni: ['', [Validators.required, Validators.pattern(/^\d{8}$/)]],
     userName: ['', [Validators.required]],
-    password: ['', [Validators.required, Validators.minLength(6)]],
+    password: ['', [Validators.required, Validators.minLength(8)]],
     confirmPassword: ['', [Validators.required]],
     estado: ['Activo', Validators.required],  // Valor por defecto "Activo"
-    rol: ['1', Validators.required],  // Valor por defecto "Administrador"
+    rol: [null, Validators.required],
   });
 
   constructor(
@@ -52,22 +57,49 @@ export class RegisterComponent {
     private authService: AuthService,
     private router: Router,
     private message: NzMessageService,
-    private logVisitaService: LogVisitaService
+    private logVisitaService: LogVisitaService,
+    private rolUsuarioService: RolUsuarioService
   ) {}
+
+  ngOnInit(): void {
+    this.cargarRoles();
+  }
+
+  cargarRoles(): void {
+    this.cargandoRoles = true;
+    this.rolUsuarioService.getRoles().subscribe({
+      next: (roles) => {
+        this.roles = roles;
+        const rolAdministrador = roles.find(rol => this.normalizarTexto(rol.NOMBRE_ROL).includes('admin'));
+        const rolInicial = rolAdministrador ?? roles[0];
+
+        if (rolInicial) {
+          this.registerForm.get('rol')?.setValue(rolInicial.ID_ROL_USUARIO);
+        }
+
+        this.cargandoRoles = false;
+      },
+      error: () => {
+        this.cargandoRoles = false;
+        this.message.error('Error al cargar los roles de usuario');
+      }
+    });
+  }
 
   submitForm(): void {
     if (this.registerForm.valid) {
       const { nombres, apellidos, cargo, dni, userName, password, rol } = this.registerForm.value;
+      const rolId = Number(rol);
 
-      this.authService.register(nombres, apellidos, userName, dni, "Activo", cargo, password, rol).subscribe({
+      this.authService.register(nombres, apellidos, userName, dni, "Activo", cargo, password, rolId).subscribe({
         next: (response) => {
           this.logVisitaService.registrarAccion('agregar usuario', '/register', {
             usuario_id: response?.user?.id ?? response?.id,
             usuario: userName,
-            rol_id: rol
+            rol_id: rolId
           }).subscribe();
           this.message.success('Registro exitoso');
-          this.router.navigate(['/login']);
+          this.router.navigate(['/usuarios']);
         },
         error: (err) => {
           console.error('Registro fallido', err);
@@ -120,7 +152,18 @@ export class RegisterComponent {
     }
   }
 
+  limitarDni(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const dni = input.value.replace(/\D/g, '').slice(0, 8);
+    input.value = dni;
+    this.registerForm.get('dni')?.setValue(dni, { emitEvent: false });
+  }
+
   volverUsuarios(): void {
     this.router.navigate(['/usuarios']);
+  }
+
+  private normalizarTexto(valor: unknown): string {
+    return String(valor ?? '').trim().toLowerCase();
   }
 }

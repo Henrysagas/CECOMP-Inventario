@@ -8,7 +8,7 @@
 
 .bien-detalles, .movimientos-container {
   flex: 1 1 300px;
-  background-color: #ffffe0;
+  background-color: #fffacd;
   padding: 20px;
   margin-right: 0;
   border-radius: 8px;
@@ -20,7 +20,7 @@
 
 .movimientos-container {
   flex: 1;
-  background-color: #ffffe0;
+  background-color: #fffacd;
   padding: 20px;
   border-radius: 8px;
 }
@@ -73,7 +73,7 @@
 }
 
 .descripcion-column, .movimientos-column {
-  background-color: #ffffe0;
+  background-color: #fffacd;
   padding: 20px;
   border-radius: 8px;
   flex-grow: 1;
@@ -119,7 +119,7 @@
 }
 
 .table td {
-  background-color: #ffffe0;
+  background-color: #fffacd;
   padding: 10px;
   border-bottom: 1px solid #ddd;
 }

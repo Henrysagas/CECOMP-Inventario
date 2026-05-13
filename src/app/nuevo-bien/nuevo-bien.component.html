@@ -20,7 +20,17 @@
     <div class="bien-detalles-grid">
       <div class="form-group field-highlight">
         <label for="idBien">ID del Bien</label>
-        <input id="idBien" type="text" [(ngModel)]="nuevoBien.codigo" name="idBien" required>
+        <input
+          id="idBien"
+          type="text"
+          [ngModel]="nuevoBien.codigo || ''"
+          (ngModelChange)="actualizarCodigoBien($event)"
+          name="idBien"
+          inputmode="numeric"
+          pattern="[0-9]*"
+          maxlength="12"
+          required
+        >
       </div>
 
       <div class="form-group">

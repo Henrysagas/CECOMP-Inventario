@@ -18,7 +18,7 @@
 
 .bien-detalles, .movimientos-container {
   flex: 1 1 300px;
-  background-color: #ffffe0;
+  background-color: #fffacd;
   padding: 20px;
   margin-right: 0;
   border-radius: 8px;
@@ -30,7 +30,7 @@
 
 .movimientos-container {
   flex: 1;
-  background-color: #ffffe0;
+  background-color: #fffacd;
   padding: 20px;
   border-radius: 8px;
 }
@@ -112,7 +112,7 @@
 }
 
 .descripcion-column, .movimientos-column, .historial-column {
-  background-color: #ffffe0;
+  background-color: #fffacd;
   padding: 20px;
   border-radius: 8px;
   flex-grow: 1;
@@ -157,7 +157,7 @@
 }
 
 .table td {
-  background-color: #ffffe0;
+  background-color: #fffacd;
   padding: 10px;
   border-bottom: 1px solid #ddd;
 }
@@ -215,7 +215,7 @@
 
 .descripcion-table .descripcion-highlight th,
 .descripcion-table .descripcion-highlight td {
-  background-color: #fff4bf;
+  background-color: #fffacd;
   font-size: 1.18rem;
 }
 
@@ -263,7 +263,7 @@ h3 {
   padding: 6px 10px;
   border: 1px solid #d8c46b;
   border-radius: 6px;
-  background: #ffffe0;
+  background: #fffacd;
   color: #7b1f2a;
   font-weight: 800;
 }
@@ -283,13 +283,13 @@ h3 {
 }
 
 .responsables-table td {
-  background-color: #ffffe0;
+  background-color: #fffacd;
   color: inherit;
   border-bottom: 1px solid #ddd;
 }
 
 .current-row td {
-  background: #ffffe0;
+  background: #fffacd;
   font-weight: 700;
 }
 
@@ -298,7 +298,7 @@ h3 {
   padding: 18px;
   border: 1px solid rgba(211, 47, 47, 0.22);
   border-radius: 8px;
-  background: #ffffe0;
+  background: #fffacd;
   color: #514532;
 }
 
@@ -341,7 +341,7 @@ h3 {
   cursor: pointer;
 }
 ::ng-deep .ant-card {
-  background-color: #ffffe0 !important; /* mismo fondo que tus contenedores */
+  background-color: #fffacd !important; /* mismo fondo que tus contenedores */
   border-radius: 8px !important;        /* mismo redondeado */
   border: none !important;              /* elimina el borde gris por defecto */
   box-shadow: 0 2px 6px rgba(0,0,0,0.1); /* sutil sombra para diferenciar */
@@ -359,5 +359,5 @@ h3 {
 }
 
 ::ng-deep .ant-card-body {
-  background-color: #ffffe0 !important; /* que el body también*/
+  background-color: #fffacd !important; /* que el body también*/
 }

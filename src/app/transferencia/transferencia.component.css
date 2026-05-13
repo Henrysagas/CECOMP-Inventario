@@ -2,7 +2,7 @@
 .transferencia-container {
   width: 100%;
   padding: clamp(12px, 2vw, 20px);
-  background-color: #ffffe0; /* Fondo principal */
+  background-color: #fffacd; /* Fondo principal */
   border: 1px solid #d82f4b; /* Borde con color principal */
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -66,7 +66,7 @@ table {
 }
 
 .table td {
-  background-color: #ffffe0;
+  background-color: #fffacd;
   padding: 10px 8px;
   border-bottom: 1px solid #ddd;
   vertical-align: middle;

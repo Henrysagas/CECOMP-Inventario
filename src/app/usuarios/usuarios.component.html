@@ -57,13 +57,20 @@
         <td>{{ usuario.APELLIDOS }}</td>
         <td>{{ usuario.USU }}</td>
         <td>
-          <nz-select [(ngModel)]="usuario.ID_ROL" (ngModelChange)="onRolChange(usuario)" [nzDisabled]="usuario.ID_ROL === 1">
+          <nz-select [(ngModel)]="usuario.ID_ROL" (ngModelChange)="onRolChange(usuario)" [nzDisabled]="esRolAdministrador(usuario.ID_ROL)">
             <nz-option *ngFor="let rol of roles" [nzValue]="rol.id" [nzLabel]="rol.nombre"></nz-option>
           </nz-select>
         </td>
         <td>{{ usuario.estado }}</td>
         <td>
           <div class="acciones-usuario">
+            <button
+              type="button"
+              nz-button
+              nzType="default"
+              (click)="abrirEditarUsuario(usuario)">
+              Editar
+            </button>
             <button
               type="button"
               nz-button
@@ -80,3 +87,48 @@
     </tbody>
   </nz-table>
 </div>
+
+<nz-modal
+  [nzVisible]="!!usuarioEditando"
+  nzTitle="Editar usuario"
+  [nzOkLoading]="guardandoUsuario"
+  nzOkText="Guardar"
+  nzCancelText="Cancelar"
+  (nzOnCancel)="cancelarEdicionUsuario()"
+  (nzOnOk)="guardarUsuarioEditado()">
+  <ng-container *nzModalContent>
+    <div class="editar-usuario-form" *ngIf="usuarioEditando">
+      <label>
+        Nombres
+        <input nz-input [(ngModel)]="usuarioEditando.NOMBRES" placeholder="Nombres" />
+      </label>
+
+      <label>
+        Apellidos
+        <input nz-input [(ngModel)]="usuarioEditando.APELLIDOS" placeholder="Apellidos" />
+      </label>
+
+      <label>
+        Usuario
+        <input nz-input [(ngModel)]="usuarioEditando.USU" placeholder="Usuario" />
+      </label>
+
+      <label>
+        DNI
+        <input nz-input [(ngModel)]="usuarioEditando.dni" placeholder="DNI" />
+      </label>
+
+      <label>
+        Cargo
+        <input nz-input [(ngModel)]="usuarioEditando.cargo" placeholder="Cargo" />
+      </label>
+
+      <label>
+        Rol
+        <nz-select [(ngModel)]="usuarioEditando.ID_ROL" [nzDisabled]="esRolAdministrador(usuarioEditando.ID_ROL)">
+          <nz-option *ngFor="let rol of roles" [nzValue]="rol.id" [nzLabel]="rol.nombre"></nz-option>
+        </nz-select>
+      </label>
+    </div>
+  </ng-container>
+</nz-modal>

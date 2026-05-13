@@ -63,7 +63,7 @@ h3 {
   padding: 7px 12px;
   border: 1px solid #d8c46b;
   border-radius: 6px;
-  background: #ffffe0;
+  background: #fffacd;
   color: #7b1f2a;
   font-weight: 800;
   white-space: nowrap;
@@ -104,7 +104,7 @@ h3 {
   padding: 12px;
   border: 1px solid rgba(211, 47, 47, 0.22);
   border-radius: 8px;
-  background: #ffffe0;
+  background: #fffacd;
 }
 
 input,
@@ -194,12 +194,12 @@ textarea:focus {
 
 .btn-light {
   border-color: #d32f2f;
-  background: #ffffe0;
+  background: #fffacd;
   color: #7b1f2a;
 }
 
 .btn-light:hover:not(:disabled) {
-  background: #fff3b0;
+  background: #fffacd;
 }
 
 @media (max-width: 900px) {

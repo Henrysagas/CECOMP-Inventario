@@ -55,6 +55,8 @@ export class HistorialResponsablesComponent implements OnInit {
   historial: Historial[] = [];
   showCambiarResponsable = false;
   selectedUsuarioId: number | null = null;
+  paginaResponsables = 1;
+  tamanioPaginaResponsables = 5;
 
   constructor(
     private route: ActivatedRoute,
@@ -84,7 +86,24 @@ export class HistorialResponsablesComponent implements OnInit {
 
   get responsableActualNombre(): string {
     const responsableActual = this.historialOrdenado.find(item => item.vigente);
-    return responsableActual ? this.obtenerNombreResponsable(responsableActual) : (this.bien?.usuario || 'Sin responsable');
+    return responsableActual ? this.obtenerNombreResponsable(responsableActual) : this.obtenerNombreUsuario(this.bien?.usuario);
+  }
+
+  get responsablesPaginados(): Historial[] {
+    const inicio = (this.paginaResponsables - 1) * this.tamanioPaginaResponsables;
+    return this.historialOrdenado.slice(inicio, inicio + this.tamanioPaginaResponsables);
+  }
+
+  get totalPaginasResponsables(): number {
+    return Math.max(1, Math.ceil(this.historialOrdenado.length / this.tamanioPaginaResponsables));
+  }
+
+  get inicioResponsables(): number {
+    return this.historialOrdenado.length === 0 ? 0 : (this.paginaResponsables - 1) * this.tamanioPaginaResponsables + 1;
+  }
+
+  get finResponsables(): number {
+    return Math.min(this.paginaResponsables * this.tamanioPaginaResponsables, this.historialOrdenado.length);
   }
 
   mostrarCambiarResponsable(): void {
@@ -141,10 +160,56 @@ export class HistorialResponsablesComponent implements OnInit {
   }
 
   obtenerNombreResponsable(item: Historial): string {
-    const usuario = item.usuario as ({ NOMBRES?: string; APELLIDOS?: string; USU?: string } | undefined);
-    const nombre = [usuario?.NOMBRES, usuario?.APELLIDOS].filter(Boolean).join(' ').trim();
+    return this.obtenerNombreUsuario(item.usuario);
+  }
 
-    return nombre || usuario?.USU || 'Sin responsable';
+  obtenerNombreUsuario(usuario: unknown): string {
+    if (!usuario) {
+      return 'Sin responsable';
+    }
+
+    if (typeof usuario === 'string') {
+      return usuario || 'Sin responsable';
+    }
+
+    const usuarioData = usuario as { NOMBRES?: string; APELLIDOS?: string; USU?: string; name?: string; nombre?: string };
+    const nombre = [usuarioData.NOMBRES, usuarioData.APELLIDOS].filter(Boolean).join(' ').trim();
+
+    return nombre || usuarioData.USU || usuarioData.name || usuarioData.nombre || 'Sin responsable';
+  }
+
+  obtenerEstadoResponsable(item: Historial): string {
+    const fechaInicio = new Date(item.fecha_inicio).getTime();
+    const fechaFin = item.fecha_fin ? new Date(item.fecha_fin).getTime() : Date.now();
+
+    const movimientoEnPeriodo = this.movimientos
+      .filter(movimiento => {
+        const fechaMovimiento = new Date(movimiento.FECHA_MODIFICACION).getTime();
+        return fechaMovimiento >= fechaInicio && fechaMovimiento <= fechaFin;
+      })
+      .sort((a, b) => new Date(b.FECHA_MODIFICACION).getTime() - new Date(a.FECHA_MODIFICACION).getTime())[0];
+
+    if (movimientoEnPeriodo?.ESTADO) {
+      return movimientoEnPeriodo.ESTADO;
+    }
+
+    const movimientoAntesDelPeriodo = this.movimientos
+      .filter(movimiento => new Date(movimiento.FECHA_MODIFICACION).getTime() <= fechaInicio)
+      .sort((a, b) => new Date(b.FECHA_MODIFICACION).getTime() - new Date(a.FECHA_MODIFICACION).getTime())[0];
+
+    return movimientoAntesDelPeriodo?.ESTADO || 'Sin estado';
+  }
+
+  irPaginaResponsablesAnterior(): void {
+    if (this.paginaResponsables > 1) {
+      this.paginaResponsables--;
+    }
+  }
+
+  irPaginaResponsablesSiguiente(): void {
+    if (this.paginaResponsables < this.totalPaginasResponsables) {
+      this.paginaResponsables++;
+    }
   }
 
   private cargarVista(bienId: number): void {
@@ -158,8 +223,13 @@ export class HistorialResponsablesComponent implements OnInit {
         this.usuariosAdministradores = viewModel.usuariosAdministradores;
         this.historial = viewModel.historial;
         this.selectedUsuarioId = this.bien.ID_USUARIO || null;
+        this.ajustarPaginaResponsables();
       },
       error: error => console.error('Error al cargar historial de responsables:', error)
     });
+  }
+
+  private ajustarPaginaResponsables(): void {
+    this.paginaResponsables = Math.min(Math.max(this.paginaResponsables, 1), this.totalPaginasResponsables);
   }
 }

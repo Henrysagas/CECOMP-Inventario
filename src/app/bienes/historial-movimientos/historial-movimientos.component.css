@@ -8,7 +8,7 @@
 
 .bien-detalles, .movimientos-container {
   flex: 1 1 300px;
-  background-color: #ffffe0;
+  background-color: #fffacd;
   padding: 20px;
   margin-right: 0;
   border-radius: 8px;
@@ -20,7 +20,7 @@
 
 .movimientos-container {
   flex: 1;
-  background-color: #ffffe0;
+  background-color: #fffacd;
   padding: 20px;
   border-radius: 8px;
 }
@@ -64,6 +64,31 @@
   -webkit-overflow-scrolling: touch;
 }
 
+.pagination-summary {
+  margin: 10px 0;
+  color: #4f3f24;
+  font-weight: 700;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.pagination-controls span {
+  color: #4f3f24;
+  font-weight: 800;
+}
+
+.btn-search {
+  background-color: #d32f2f;
+  color: #ffffff;
+}
+
 .detalles-container {
   display: flex;
   flex-wrap: wrap;
@@ -73,7 +98,7 @@
 }
 
 .descripcion-column, .movimientos-column {
-  background-color: #ffffe0;
+  background-color: #fffacd;
   padding: 20px;
   border-radius: 8px;
   flex-grow: 1;
@@ -119,7 +144,7 @@
 }
 
 .table td {
-  background-color: #ffffe0;
+  background-color: #fffacd;
   padding: 10px;
   border-bottom: 1px solid #ddd;
 }

@@ -31,6 +31,7 @@ import { LogVisitaService } from '../services/log-visita.service';
 })
 export class AgregarBienComponent implements OnInit {
 
+  readonly codigoBienMaxDigitos = 12;
   categoriaPredeterminada: Categoria = new Categoria(0, 'Defecto');  
   nuevoBien: Bien = new Bien(0, 0, 0, 0, '', '', '', '', '', '', '', this.categoriaPredeterminada, [], '');
   usuariosAdministradores: Usuario[] = []; 
@@ -119,7 +120,19 @@ export class AgregarBienComponent implements OnInit {
     }
   }
 
+  actualizarCodigoBien(valor: string | number): void {
+    const codigo = String(valor ?? '').replace(/\D/g, '').slice(0, this.codigoBienMaxDigitos);
+    this.nuevoBien.codigo = codigo ? Number(codigo) : 0;
+  }
+
   guardarBien(): void {
+    const codigo = String(this.nuevoBien.codigo || '');
+
+    if (!codigo || codigo.length > this.codigoBienMaxDigitos) {
+      this.message.warning(`El ID del Bien debe tener como maximo ${this.codigoBienMaxDigitos} digitos.`);
+      return;
+    }
+
     if (!this.selectedAmbienteId || !this.selectedEstado) {
       this.message.warning('Por favor completa los campos obligatorios.');
       return;
