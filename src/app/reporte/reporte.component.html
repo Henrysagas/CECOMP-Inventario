@@ -43,7 +43,7 @@
           <span>Patrimonio: {{ getCantidadPorTipo('patrimonio') }}</span>
         </div>
 
-        <button *ngIf="isAdmin" nz-button nzType="primary" class="btn-generar-reporte" (click)="generarReporte('transferencia')">
+        <button *ngIf="canGenerateReports" nz-button nzType="primary" class="btn-generar-reporte" (click)="generarReporte('transferencia')">
           Generar Reporte
         </button>
       </div>
@@ -172,7 +172,7 @@
 
           <div class="consulta-actions">
             <button
-              *ngIf="isAdmin"
+              *ngIf="canGenerateReports"
               nz-button
               nzType="primary"
               class="btn-generar-reporte"

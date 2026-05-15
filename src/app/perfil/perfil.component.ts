@@ -5,8 +5,10 @@ import { UsuarioService } from '../services/usuario.service';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzFormModule } from 'ng-zorro-antd/form';
+import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzTabsModule } from 'ng-zorro-antd/tabs';
 
 // Enum para roles
 export enum Rol {
@@ -19,7 +21,16 @@ export enum Rol {
   templateUrl: './perfil.component.html',
   styleUrls: ['./perfil.component.css'],
   standalone: true,
-  imports: [NzFormModule, NzInputModule, NzButtonModule, NzCardModule, ReactiveFormsModule,NzSelectModule]
+  imports: [
+    NzFormModule,
+    NzInputModule,
+    NzButtonModule,
+    NzCardModule,
+    ReactiveFormsModule,
+    NzSelectModule,
+    NzTabsModule,
+    NzGridModule
+  ]
 })
 export class PerfilComponent implements OnInit {
   perfilForm!: FormGroup;

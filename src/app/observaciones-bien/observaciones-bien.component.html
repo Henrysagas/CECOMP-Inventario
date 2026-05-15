@@ -1,0 +1,134 @@
+<div class="observaciones-container">
+  <div class="observaciones-header">
+    <div>
+      <p class="eyebrow">Inventario</p>
+      <h3>{{ titulo }}</h3>
+    </div>
+    <button type="button" class="btn btn-danger" (click)="mostrarNuevaObservacion()" *ngIf="permitirGestion && !mostrarFormulario">
+      Agregar Observacion
+    </button>
+  </div>
+
+  <div class="filters-row" *ngIf="mostrarFiltroBien && !bienId">
+    <input
+      type="number"
+      class="input-field"
+      placeholder="ID del bien"
+      [(ngModel)]="filtroBien"
+      (keyup.enter)="buscar()" />
+    <input
+      type="text"
+      class="input-field"
+      placeholder="Tipo de evento"
+      [(ngModel)]="filtroTipo"
+      (keyup.enter)="buscar()" />
+    <button type="button" class="btn btn-search" (click)="buscar()">Buscar</button>
+    <button type="button" class="btn btn-dark" (click)="limpiarFiltros()">Limpiar</button>
+  </div>
+
+  <form class="observacion-form" *ngIf="permitirGestion && mostrarFormulario" (ngSubmit)="guardarObservacion()">
+    <div class="form-grid">
+      <label>
+        ID del bien
+        <input
+          type="number"
+          class="form-control"
+          name="ID_BIEN"
+          required
+          [readonly]="!!bienId"
+          [(ngModel)]="formulario.ID_BIEN" />
+      </label>
+
+      <label>
+        Tipo de evento
+        <input
+          type="text"
+          class="form-control"
+          name="tipo_evento"
+          required
+          maxlength="120"
+          [(ngModel)]="formulario.tipo_evento" />
+      </label>
+
+      <label>
+        Fecha de evento
+        <input
+          type="date"
+          class="form-control"
+          name="fecha_evento"
+          [(ngModel)]="formulario.fecha_evento" />
+      </label>
+
+      <label>
+        ID usuario
+        <input
+          type="number"
+          class="form-control"
+          name="id_usuario"
+          [(ngModel)]="formulario.id_usuario" />
+      </label>
+    </div>
+
+    <label>
+      Observacion
+      <textarea
+        class="form-control"
+        name="observacion"
+        rows="4"
+        [(ngModel)]="formulario.observacion"></textarea>
+    </label>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-danger" [disabled]="guardando">
+        {{ observacionEditandoId ? 'Actualizar Observacion' : 'Guardar Observacion' }}
+      </button>
+      <button type="button" class="btn btn-dark" (click)="cancelarFormulario()" [disabled]="guardando">Cancelar</button>
+    </div>
+  </form>
+
+  <div *ngIf="cargando" class="empty-state">Cargando observaciones...</div>
+  <div *ngIf="!cargando && error" class="empty-state state-error">{{ error }}</div>
+
+  <div *ngIf="!cargando && !error && observaciones.length > 0; else sinObservaciones">
+    <div class="pagination-summary">
+      Mostrando {{ indiceInicio }}-{{ indiceFin }} de {{ observaciones.length }} observaciones
+    </div>
+    <div class="tabla-contenedor">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Bien</th>
+            <th scope="col">Tipo</th>
+            <th scope="col">Observacion</th>
+            <th scope="col">Fecha</th>
+            <th scope="col">Usuario</th>
+            <th scope="col" *ngIf="permitirGestion">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let observacion of observacionesPaginadas">
+            <td>{{ obtenerNombreBien(observacion) }}</td>
+            <td>{{ observacion.tipo_evento }}</td>
+            <td>{{ observacion.observacion || 'Sin observacion' }}</td>
+            <td>{{ (observacion.fecha_evento || observacion.created_at) | date }}</td>
+            <td>{{ obtenerNombreUsuario(observacion) }}</td>
+            <td class="actions-cell" *ngIf="permitirGestion">
+              <button type="button" class="btn btn-search" (click)="editarObservacion(observacion)">Editar</button>
+              <button type="button" class="btn btn-dark" (click)="confirmarEliminar(observacion)">Eliminar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination-controls" *ngIf="observaciones.length > tamanioPagina">
+      <button class="btn btn-search" (click)="irPaginaAnterior()" [disabled]="paginaActual === 1">Anterior</button>
+      <span>Pagina {{ paginaActual }} de {{ totalPaginas }}</span>
+      <button class="btn btn-search" (click)="irPaginaSiguiente()" [disabled]="paginaActual === totalPaginas">Siguiente</button>
+    </div>
+  </div>
+
+  <ng-template #sinObservaciones>
+    <p class="empty-state" *ngIf="!cargando && !error">No hay observaciones registradas.</p>
+  </ng-template>
+</div>

@@ -9,6 +9,7 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableComponent, NzTableModule } from 'ng-zorro-antd/table';
 import { NzTimelineModule } from 'ng-zorro-antd/timeline';
 import { NzMessageModule, NzMessageService } from 'ng-zorro-antd/message';
+import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { Ambiente } from '../../models/ambiente';
 import { Bien } from '../../models/bien';
 import { Categoria } from '../../models/categoria';
@@ -18,6 +19,7 @@ import { Ubicacion } from '../../models/ubicacion';
 import { Usuario } from '../../models/usuario';
 import { BienDetallePresenterService } from '../../services/bien-detalle-presenter.service';
 import { LogVisitaService } from '../../services/log-visita.service';
+import { ObservacionesBienComponent } from '../../observaciones-bien/observaciones-bien.component';
 
 @Component({
   selector: 'app-historial-movimientos',
@@ -33,6 +35,8 @@ import { LogVisitaService } from '../../services/log-visita.service';
     NzTimelineModule,
     NzCardComponent,
     NzMessageModule,
+    NzTabsModule,
+    ObservacionesBienComponent,
     RouterModule
   ],
   templateUrl: './historial-movimientos.component.html',

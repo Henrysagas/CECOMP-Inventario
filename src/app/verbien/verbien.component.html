@@ -110,6 +110,7 @@
           <thead>
             <tr>
               <th scope="col">Responsable</th>
+              <th scope="col">Ultimo Estado</th>
               <th scope="col">Desde</th>
               <th scope="col">Hasta</th>
             </tr>
@@ -117,6 +118,7 @@
           <tbody>
             <tr *ngFor="let item of responsablesPaginados" [class.current-row]="item.vigente">
               <td>{{ obtenerNombreResponsable(item) }}</td>
+              <td>{{ obtenerEstadoResponsable(item) }}</td>
               <td>{{ item.fecha_inicio | date }}</td>
               <td>{{ item.fecha_fin ? (item.fecha_fin | date) : 'Actualidad' }}</td>
             </tr>
@@ -133,5 +135,16 @@
         <p class="empty-state">No hay responsables registrados para este bien.</p>
       </ng-template>
     </div>
+  </nz-tab>
+
+  <!-- TAB: Observaciones -->
+  <nz-tab nzTitle="Observaciones">
+    <app-observaciones-bien
+      *ngIf="bien"
+      [bienId]="bien.id"
+      [mostrarFiltroBien]="false"
+      [permitirGestion]="false"
+      titulo="Observaciones del Bien">
+    </app-observaciones-bien>
   </nz-tab>
 </nz-tabset>

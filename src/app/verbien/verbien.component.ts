@@ -16,6 +16,7 @@ import { Historial } from '../models/historial';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzCardComponent } from "ng-zorro-antd/card";
 import { Location } from '@angular/common';
+import { ObservacionesBienComponent } from '../observaciones-bien/observaciones-bien.component';
 
 @Component({
   selector: 'app-ver-bien',
@@ -33,6 +34,7 @@ import { Location } from '@angular/common';
     NzTableComponent,
     NzTimelineModule,
     NzCardComponent,
+    ObservacionesBienComponent,
     RouterModule],
   template: `
   <div nz-row>
@@ -196,6 +198,29 @@ export class VerBienComponent implements OnInit {
     return this.obtenerNombreUsuario(item.usuario);
   }
 
+  obtenerEstadoResponsable(item: Historial): string {
+    const inicio = this.obtenerTiempoFecha(item.fecha_inicio);
+    const fin = item.fecha_fin ? this.obtenerTiempoFinDia(item.fecha_fin) : Number.POSITIVE_INFINITY;
+    const movimientosOrdenados = [...this.movimientos].sort(
+      (a, b) => new Date(b.FECHA_MODIFICACION).getTime() - new Date(a.FECHA_MODIFICACION).getTime()
+    );
+
+    const movimientoEnPeriodo = movimientosOrdenados.find(movimiento => {
+      const fechaMovimiento = this.obtenerTiempoFecha(movimiento.FECHA_MODIFICACION);
+      return fechaMovimiento >= inicio && fechaMovimiento <= fin;
+    });
+
+    if (movimientoEnPeriodo?.ESTADO) {
+      return movimientoEnPeriodo.ESTADO;
+    }
+
+    const movimientoVigenteAlInicio = movimientosOrdenados.find(movimiento =>
+      this.obtenerTiempoFecha(movimiento.FECHA_MODIFICACION) <= inicio
+    );
+
+    return movimientoVigenteAlInicio?.ESTADO || 'Sin estado';
+  }
+
   obtenerNombreUsuario(usuario: unknown): string {
     if (!usuario) {
       return 'Sin responsable';
@@ -221,5 +246,17 @@ export class VerBienComponent implements OnInit {
 
   private ajustarPaginaResponsables(): void {
     this.paginaResponsables = Math.min(Math.max(this.paginaResponsables, 1), this.totalPaginasResponsables);
+  }
+
+  private obtenerTiempoFecha(fecha?: string | null): number {
+    return new Date(fecha || '').getTime() || 0;
+  }
+
+  private obtenerTiempoFinDia(fecha: string): number {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
+      return new Date(`${fecha}T23:59:59`).getTime();
+    }
+
+    return this.obtenerTiempoFecha(fecha);
   }
 }

@@ -10,28 +10,24 @@ export class authGuard implements CanActivate {
   constructor(private authService: AuthService, private router: Router) {}
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
-    // Verificar si estamos en el entorno del navegador
     if (typeof window === 'undefined') {
-      return false; // Bloquear acceso si estamos en el lado del servidor
+      return false;
     }
 
     const token = localStorage.getItem('token');
-    const userRole = localStorage.getItem('ID_ROL'); // Obtener el rol almacenado
+    const userRole = this.authService.getStoredRole();
 
-    // Verificar si hay un token almacenado, lo que indica que el usuario está autenticado
     if (!token) {
       this.router.navigate(['/login']);
       return false;
     }
 
-    // Verificar si la ruta es de administrador y si el usuario tiene ID_ROL igual a 1
-    const isAdminRoute = route.data['role'] === 'admin';
-    if (isAdminRoute && userRole !== '1') {
-      this.router.navigate(['/login']);
+    const allowedRoles = route.data['roles'] as number[] | undefined;
+    if (allowedRoles?.length && (!userRole || !allowedRoles.includes(userRole))) {
+      this.router.navigate([this.authService.canManageInventory(userRole) ? '/bienes' : '/verbienes']);
       return false;
     }
 
-    // Permitir acceso si cumple con las condiciones
     return true;
   }
 }

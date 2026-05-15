@@ -1,112 +1,121 @@
-/* Ajuste para asegurar que el contenedor tenga el espacio necesario */
-.container {
+.perfil-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: flex-start;
+  align-items: center;
   min-height: 0;
-  padding: clamp(10px, 2vw, 20px);
-  
-  gap: 20px;
-  background-color: #fffacd; /* Fondo amarillo claro */
-  overflow-y: auto;
-  width: 100%;  /* Hace que el contenedor ocupe el 100% del ancho disponible */
-  max-width: 1000px;  /* Limita el ancho máximo del contenedor */
+  width: 100%;
+  padding: clamp(12px, 2vw, 20px);
+  background-color: #fffacd;
   box-sizing: border-box;
+}
+
+h2 {
+  color: #d32f2f;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 2rem;
+  font-weight: 790;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.perfil-card {
+  width: 100%;
+  max-width: 900px;
+  padding: 10px 20px 20px;
+  background-color: #fffacd;
+  border: 3px solid #d32f2f;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+}
+
+.perfil-tabs {
+  text-align: left;
+}
+
+.perfil-form,
+.password-form {
+  padding-top: 12px;
+}
+
+.password-form {
+  max-width: 640px;
   margin: 0 auto;
 }
 
-.nz-card {
-  width: 100%;
-  max-width: 800px; /* Limita el tamaño máximo para evitar que el card se haga demasiado grande */
-  background-color: #fffacd; /* Fondo crema */
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  border: 3px solid #d32f2f; /* Borde color guinda */
-
-  padding: 20px;
-  box-sizing: border-box;  /* Asegura que el padding no afecte al tamaño total */
+nz-form-label {
+  color: #8f1f2b;
+  font-size: 1.05rem;
+  font-weight: bold;
 }
 
-/* Asegurar que los inputs no estén demasiado altos */
-.nz-input {
-  height: 40px;  /* Ajuste de altura de los campos de entrada */
-  font-size: 14px;  /* Ajuste de tamaño de la fuente dentro de los inputs */
-  box-sizing: border-box;  /* Asegura que el contenido no se desborde */
+input[nz-input],
+nz-select {
+  height: 40px;
+  font-size: 14px;
+  box-sizing: border-box;
 }
 
-/* Ajustar las columnas de los formularios */
-.nz-form-item {
-  margin-bottom: 16px;  /* Aumenta el espacio entre los campos */
-  border: 3px solid #d32f2f; /* Borde color guinda */
-
-}
-
-.nz-form-label {
-  font-size: 14px;  /* Ajusta el tamaño de los labels */
-  line-height: 20px;  /* Asegura que los labels tengan suficiente espacio */
-  width: 100%;  /* Asegura que los labels usen el 100% del espacio disponible */
-  border: 3px solid #d32f2f; /* Borde color guinda */
-
-}
-
-.nz-form-control {
-  width: 100%;  /* Asegura que los inputs ocupen todo el ancho disponible */
-  padding: 0 10px;  /* Asegura que haya suficiente espacio dentro de los inputs */
-  border: 3px solid #d32f2f; /* Borde color guinda */
-
-}
-
-.nz-card {
-  border: 3px solid #d32f2f; /* Borde color guinda */
-
-  padding: 20px;
-  box-sizing: border-box;  /* Evita el desbordamiento en la tarjeta */
-}
-
-.mt-4 {
-  margin-top: 10px;  /* Reduces el margen superior si es necesario */
+.perfil-actions {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0;
 }
 
 .update-password-button {
-  background-color: #d82f4b;  /* Rojo */
-  border-color: #d82f4b;  /* Rojo */
-}
-
-.update-password-button[disabled] {
-  background-color: #d9d9d9;  /* Color gris cuando está deshabilitado */
-  border-color: #d9d9d9;  /* Gris */
-}
-
-.update-password-button:not([disabled]) {
-  background-color: #d82f4b;  /* Rojo cuando está habilitado */
-  border-color: #d82f4b;  /* Rojo */
+  min-width: 190px;
+  background-color: #d82f4b;
+  border-color: #d82f4b;
+  border-radius: 5px;
 }
 
 .update-password-button:not([disabled]):hover {
-  background-color: #b71c1c;  /* Rojo más oscuro al pasar el ratón */
-  border-color: #b71c1c;  /* Borde más oscuro */
-}
-.ant-card {
-  background-color: #fffacd !important; /* Fondo crema */
+  background-color: #b71c1c;
+  border-color: #b71c1c;
 }
 
-/* Estilo para pantalla pequeña */
+.update-password-button[disabled] {
+  background-color: #d9d9d9;
+  border-color: #d9d9d9;
+}
+
+:host ::ng-deep .perfil-card .ant-card-body {
+  padding: 0;
+}
+
+:host ::ng-deep .perfil-tabs .ant-tabs-nav {
+  margin-bottom: 18px;
+}
+
+:host ::ng-deep .perfil-tabs .ant-tabs-tab {
+  color: #8f1f2b;
+  font-weight: 700;
+}
+
+:host ::ng-deep .perfil-tabs .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #d32f2f;
+}
+
+:host ::ng-deep .perfil-tabs .ant-tabs-ink-bar {
+  background: #d82f4b;
+}
+
 @media (max-width: 768px) {
-  .container {
-    padding: 10px;
+  h2 {
+    font-size: 1.6rem;
+    margin-bottom: 20px;
   }
 
-  .nz-card {
-    max-width: 100%;
-    padding: 12px;
+  .perfil-card {
+    padding: 8px 12px 16px;
   }
 
-  .nz-form-item {
-    margin-bottom: 12px;
+  nz-form-label {
+    font-size: 1rem;
   }
 
-  .nz-form-label {
-    font-size: 12px;
+  .update-password-button {
+    width: 100%;
   }
 }

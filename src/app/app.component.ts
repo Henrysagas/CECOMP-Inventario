@@ -4,8 +4,8 @@ import { NavigationEnd, RouterLink, RouterOutlet } from '@angular/router';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzLayoutModule } from 'ng-zorro-antd/layout';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
-import { AuthService } from './auth.service'; // Asegúrate de importar tu servicio de autenticación
-import { Router } from '@angular/router'; // Importa Router
+import { AuthService } from './auth.service';
+import { Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { LogVisitaService } from './services/log-visita.service';
 
@@ -19,21 +19,25 @@ import { LogVisitaService } from './services/log-visita.service';
 export class AppComponent implements OnInit {
   isCollapsed = false;
   isMobile = false;
-  isLoggedIn = false; // Estado inicial de inicio de sesión
-  isAdmin: boolean = false; // Estado inicial para el rol de administrador
+  isLoggedIn = false;
+  isAdmin = false;
+  isSuperAdmin = false;
+
   constructor(
     private authService: AuthService,
     private router: Router,
     private logVisitaService: LogVisitaService
   ) {
-    // Suscribirse a los cambios en el estado de autenticación
     this.authService.isLoggedIn$.subscribe(isLoggedIn => {
       this.isLoggedIn = isLoggedIn;
     });
 
-    // Suscribirse al estado del rol del usuario
     this.authService.isAdmin$.subscribe(isAdmin => {
-      this.isAdmin = isAdmin; // Actualiza el estado de isAdmin
+      this.isAdmin = isAdmin;
+    });
+
+    this.authService.currentRole$.subscribe(role => {
+      this.isSuperAdmin = this.authService.isSuperAdmin(role);
     });
 
     this.router.events
@@ -129,6 +133,10 @@ export class AppComponent implements OnInit {
       return 'abrir formulario de transferencia';
     }
 
+    if (ruta.startsWith('/observaciones')) {
+      return 'consultar observaciones de bienes';
+    }
+
     if (ruta.startsWith('/categorias')) {
       return 'consultar categorias';
     }
@@ -148,4 +156,3 @@ export class AppComponent implements OnInit {
     return 'navegar en el sistema';
   }
 }
-

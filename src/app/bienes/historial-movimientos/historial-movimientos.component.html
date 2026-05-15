@@ -2,6 +2,8 @@
   <button type="button" class="btn btn-dark" routerLink="/bienes">Volver</button>
 </div>
 
+<nz-tabset *ngIf="bien">
+  <nz-tab nzTitle="Movimientos">
  <div nz-col nzFlex="auto" [nzXs]="{ span: 11 }" [nzLg]="{ span: 11 }" class="movimientos-column">
     <div class="movimientos-column">
       <h3 *ngIf="!showAgregarMovimiento">Historial de Movimientos</h3>
@@ -63,3 +65,13 @@
       </div>
     </div>
   </div>
+  </nz-tab>
+
+  <nz-tab nzTitle="Observaciones">
+    <app-observaciones-bien
+      [bienId]="bien.id"
+      [mostrarFiltroBien]="false"
+      titulo="Observaciones del Bien">
+    </app-observaciones-bien>
+  </nz-tab>
+</nz-tabset>

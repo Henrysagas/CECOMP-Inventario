@@ -59,7 +59,7 @@ interface ConsultaGenerada {
 })
 export class ReporteComponent implements OnInit {
 
-  isAdmin = false;
+  canGenerateReports = false;
   
   transferReportData: Modalidad[] = [];
   filteredTransferReportData: Modalidad[] = [];
@@ -103,8 +103,8 @@ export class ReporteComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.authService.isAdmin$.subscribe(isAdmin => {
-      this.isAdmin = isAdmin;
+    this.authService.currentRole$.subscribe(role => {
+      this.canGenerateReports = this.authService.canGenerateTransferReports(role);
     });
     this.consultaDate = new Date();
     this.loadTransferReports();
@@ -185,7 +185,7 @@ export class ReporteComponent implements OnInit {
   
 
   generarReporte(tipo: string): void {
-    if (!this.isAdmin) {
+    if (!this.canGenerateReports) {
       return;
     }
 

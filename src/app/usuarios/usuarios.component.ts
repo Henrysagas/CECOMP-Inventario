@@ -152,39 +152,6 @@ export class UsuariosComponent implements OnInit {
     this.estadoFiltro = 'activos';
   }
 
-  eliminarUsuario(id: number): void {
-    // Primero obtenemos los bienes del usuario
-    this.usuariosService.getBienesPorUsuario(id).subscribe({
-      next: (data) => {
-        if (data && data.length > 0) {
-          // Si tiene bienes, mostramos un mensaje de error
-          this.message.error('No se puede eliminar el usuario porque tiene bienes asignados');
-        } else {
-          // Si no tiene bienes, cambiamos el rol a 3 (eliminado)
-          const usuario = this.usuarios.find(u => u.id === id);
-          if (usuario) {
-            usuario.ID_ROL = 3; // Cambiamos el rol a "eliminado"
-            this.usuariosService.updateRol(usuario.id, usuario.ID_ROL).subscribe({
-              next: () => {
-                this.logVisitaService.registrarAccion('eliminar usuario', '/usuarios', {
-                  usuario_id: usuario.id
-                }).subscribe();
-                this.message.success('Usuario eliminado (rol cambiado) correctamente');
-                this.cargarUsuarios(); // Recargar lista
-              },
-              error: () => {
-                this.message.error('Error al actualizar el rol');
-              }
-            });
-          }
-        }
-      },
-      error: () => {
-        this.message.error('Error al verificar los bienes del usuario');
-      }
-    });
-  }
-
   prepararTransferenciaDesdeUsuario(idUsuario: number): void {
     this.cargarBienesDeOrigen(idUsuario);
   }
@@ -306,11 +273,6 @@ export class UsuariosComponent implements OnInit {
         this.message.error('Error al actualizar el rol');
       }
     });
-  }
-
-  esRolAdministrador(rolId: number | undefined | null): boolean {
-    const rol = this.roles.find(item => item.id === rolId);
-    return this.normalizarTexto(rol?.nombre).includes('admin');
   }
 
   navigateToRegister(): void {

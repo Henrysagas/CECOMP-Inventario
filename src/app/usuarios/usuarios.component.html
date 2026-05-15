@@ -57,7 +57,7 @@
         <td>{{ usuario.APELLIDOS }}</td>
         <td>{{ usuario.USU }}</td>
         <td>
-          <nz-select [(ngModel)]="usuario.ID_ROL" (ngModelChange)="onRolChange(usuario)" [nzDisabled]="esRolAdministrador(usuario.ID_ROL)">
+          <nz-select [(ngModel)]="usuario.ID_ROL" (ngModelChange)="onRolChange(usuario)">
             <nz-option *ngFor="let rol of roles" [nzValue]="rol.id" [nzLabel]="rol.nombre"></nz-option>
           </nz-select>
         </td>
@@ -125,7 +125,7 @@
 
       <label>
         Rol
-        <nz-select [(ngModel)]="usuarioEditando.ID_ROL" [nzDisabled]="esRolAdministrador(usuarioEditando.ID_ROL)">
+        <nz-select [(ngModel)]="usuarioEditando.ID_ROL">
           <nz-option *ngFor="let rol of roles" [nzValue]="rol.id" [nzLabel]="rol.nombre"></nz-option>
         </nz-select>
       </label>
