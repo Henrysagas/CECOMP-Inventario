@@ -22,8 +22,10 @@ export class UsuarioService {
   }
 
   getUsuariosAsignablesBienes(): Observable<Usuario[]> {
-    return this.getUsuariosConRolAdmin().pipe(
-      map(usuarios => usuarios.filter(usuario => !this.esUsuarioPatrimonio(usuario)))
+    return this.getUsuarios().pipe(
+      map(usuarios => usuarios.filter(usuario =>
+        usuario.estado !== 'Inactivo' && !this.esUsuarioPatrimonio(usuario)
+      ))
     );
   }
 
