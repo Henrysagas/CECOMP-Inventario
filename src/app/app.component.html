@@ -31,61 +31,61 @@
         <ul>
           <li *ngIf="isLoggedIn" nz-menu-item nzMatchRouter>
             <a routerLink="/verbienes" (click)="closeMobileMenu()">
-              <span nz-icon nzType="file-search" nzTheme="outline" style="margin-right: 5px;"></span>
+              <span class="sidebar-menu-icon" nz-icon nzType="appstore" nzTheme="outline"></span>
               Ver Bienes
             </a>
           </li>
           <li *ngIf="isLoggedIn && isAdmin" nz-menu-item nzMatchRouter>
             <a routerLink="/bienes" (click)="closeMobileMenu()">
-              <span nz-icon nzType="file-search" nzTheme="outline" style="margin-right: 5px;"></span>
+              <span class="sidebar-menu-icon" nz-icon nzType="database" nzTheme="outline"></span>
               Bienes (Administrar)
             </a>
           </li>
           <li *ngIf="isLoggedIn && isAdmin" nz-menu-item  nzMatchRouter>
             <a routerLink="/categorias" (click)="closeMobileMenu()">
-              <span nz-icon nzType="folder" nzTheme="outline" style="margin-right: 5px;"></span>
+              <span class="sidebar-menu-icon" nz-icon nzType="tags" nzTheme="outline"></span>
               Categorías
             </a>
           </li>
 
           <li *ngIf="isLoggedIn && isAdmin" nz-menu-item nzMatchRouter>
             <a routerLink="/ambientes" (click)="closeMobileMenu()">
-              <span nz-icon nzType="home" nzTheme="outline" style="margin-right: 5px;"></span>
+              <span class="sidebar-menu-icon" nz-icon nzType="bank" nzTheme="outline"></span>
               Ambientes
             </a>
           </li>
           <li *ngIf="isLoggedIn" nz-menu-item nzMatchRouter>
             <a routerLink="/reportes" (click)="closeMobileMenu()">
-              <span nz-icon nzType="line-chart" nzTheme="outline" style="margin-right: 5px;"></span>
+              <span class="sidebar-menu-icon" nz-icon nzType="bar-chart" nzTheme="outline"></span>
               Reportes
             </a>
           </li>
           <li *ngIf="isLoggedIn && isSuperAdmin" nz-menu-item nzMatchRouter>
             <a routerLink="/usuarios" (click)="closeMobileMenu()">
-              <span nz-icon nzType="line-chart" nzTheme="outline" style="margin-right: 5px;"></span>
+              <span class="sidebar-menu-icon" nz-icon nzType="team" nzTheme="outline"></span>
               Usuarios
             </a>
           </li>
           <li *ngIf="isLoggedIn && isAdmin" nz-menu-item nzMatchRouter>
             <a routerLink="/log-visitas" (click)="closeMobileMenu()">
-              <span nz-icon nzType="container" nzTheme="outline" style="margin-right: 5px;"></span>
+              <span class="sidebar-menu-icon" nz-icon nzType="history" nzTheme="outline"></span>
               Log de visitas
             </a>
           </li>
           <li *ngIf="isLoggedIn && isAdmin" nz-menu-item nzMatchRouter>
             <a routerLink="/observaciones" (click)="closeMobileMenu()">
-              <span nz-icon nzType="container" nzTheme="outline" style="margin-right: 5px;"></span>
+              <span class="sidebar-menu-icon" nz-icon nzType="message" nzTheme="outline"></span>
               Observaciones
             </a>
           </li>
           <li *ngIf="isLoggedIn" nz-menu-item nzMatchRouter>
             <a routerLink="/perfil" (click)="closeMobileMenu()">
-              <span nz-icon nzType="container" nzTheme="outline" style="margin-right: 5px;"></span>
+              <span class="sidebar-menu-icon" nz-icon nzType="user" nzTheme="outline"></span>
               Perfil
             </a>
           </li>
           <li nz-menu-item (click)="gestionarSesion()" style="margin-top: auto;">
-            <span nz-icon [nzType]="isLoggedIn ? 'logout' : 'login'" nzTheme="outline" style="margin-right: 5px;"></span>
+            <span class="sidebar-menu-icon" nz-icon [nzType]="isLoggedIn ? 'logout' : 'login'" nzTheme="outline"></span>
             {{ isLoggedIn ? 'Cerrar Sesión' : 'Iniciar Sesión' }}
           </li>
           

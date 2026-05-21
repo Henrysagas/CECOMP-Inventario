@@ -82,6 +82,29 @@
   background-color: rgba(0, 0, 0, 0.1) !important;
 }
 
+::ng-deep .menu-sidebar .sidebar-menu-icon {
+  display: inline-flex;
+  width: 34px;
+  height: 34px;
+  margin-right: 10px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: #d32f2f;
+  color: #fff;
+  font-size: 18px;
+  box-shadow: 0 3px 8px rgba(211, 47, 47, 0.3);
+  vertical-align: middle;
+  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+::ng-deep .menu-sidebar .ant-menu-item:hover .sidebar-menu-icon,
+::ng-deep .menu-sidebar .ant-menu-item-selected .sidebar-menu-icon {
+  background: #b71c1c;
+  box-shadow: 0 4px 10px rgba(183, 28, 28, 0.38);
+  transform: translateY(-1px);
+}
+
 .header-trigger {
   height: 64px;
   padding: 20px 24px;
@@ -235,6 +258,13 @@ nz-content {
   ::ng-deep .menu-sidebar .ant-menu-item,
   ::ng-deep .menu-sidebar .ant-menu-submenu-title,
   ::ng-deep .menu-sidebar .ant-menu-item a {
+    font-size: 16px;
+  }
+
+  ::ng-deep .menu-sidebar .sidebar-menu-icon {
+    width: 30px;
+    height: 30px;
+    margin-right: 8px;
     font-size: 16px;
   }
 }
