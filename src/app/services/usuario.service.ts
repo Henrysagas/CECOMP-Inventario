@@ -30,11 +30,13 @@ export class UsuarioService {
   }
 
   esUsuarioSinUsuario(usuario: Usuario): boolean {
-    return this.obtenerTextoUsuario(usuario) === 'sin usuario';
+    return this.obtenerCamposUsuario(usuario).some(campo => campo === 'sin usuario');
   }
 
   esUsuarioPatrimonio(usuario: Usuario): boolean {
-    return this.obtenerTextoUsuario(usuario) === 'patrimonio';
+    const campos = this.obtenerCamposUsuario(usuario);
+
+    return campos.some(campo => campo === 'patrimonio' || campo === 'raee/chatarra');
   }
 
   // Método para obtener todos los usuarios
@@ -75,16 +77,14 @@ export class UsuarioService {
     return this.http.put<Usuario>(`${this.apiUrl}/${id}`, usuario);
   }
 
-  private obtenerTextoUsuario(usuario: Usuario): string {
+  private obtenerCamposUsuario(usuario: Usuario): string[] {
     return [
       usuario.NOMBRES,
       usuario.APELLIDOS,
       usuario.USU
     ]
       .filter(Boolean)
-      .join(' ')
-      .trim()
-      .toLowerCase();
+      .map(campo => campo.trim().toLowerCase());
   }
   
 }
