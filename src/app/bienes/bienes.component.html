@@ -9,8 +9,11 @@
 
 
       <!-- Campo de búsqueda para nombre o descripción del bien -->
-      <input type="text" id="codigoInput" placeholder="Ingrese el código del bien o nombre/descripción" 
-             class="input-field" [(ngModel)]="searchTerm" (input)="onSearchTermChange()" />
+      <input type="text" id="codigoInput" placeholder="ID" 
+             class="input-field" [(ngModel)]="idTerm" (input)="onIdTermChange()" />
+
+      <input type="text" placeholder="Nombre, descripcion, modelo, color..." 
+             class="input-field" [(ngModel)]="nombreTerm" (input)="onNombreTermChange()" />
   
       <!-- Campo de búsqueda manual para la categoría -->
       <input *ngIf="manualCategoria" type="text" placeholder="Escriba la categoría" 
@@ -18,28 +21,22 @@
   
       <!-- Select para categoría, sólo si no es manual -->
 
-      <input type="text" placeholder="Última Ubicación" class="input-field" [(ngModel)]="ubicacionTerm" (input)="onUbicacionChange()" />
-        
-      <!-- Nuevo campo de búsqueda para Último Ambiente -->
-      <input type="text" placeholder="Último Ambiente" class="input-field" [(ngModel)]="ambienteTerm" (input)="onAmbienteChange()" />
-  
       <div *ngIf="!manualCategoria">
         <select id="categoriaSelect" class="input-field" (change)="onCategoriaChange($event)">
           <option value="">Todas las Categorías</option>
           <option *ngFor="let categoria of categorias" [value]="categoria.id">{{ categoria.NOMBRE_CATEGORIA }}</option>
         </select>
       </div>
-      <!-- Botón para alternar entre select e input manual -->
-      <button (click)="toggleManualCategoria()" class="btn btn-search">Búsqueda Manual</button>
+      <input *ngIf="manualCategoria" type="text" placeholder="Escriba el ambiente" class="input-field" [(ngModel)]="ambienteTerm" (input)="onAmbienteChange()" />
 
-      <!-- Filtros dinámicos según la categoría seleccionada -->
-      <div *ngIf="selectedCategoria" class="dynamic-filters">
-        <input *ngIf="selectedCategoria.MODELO" type="text" placeholder="Modelo" class="input-field" />
-        <input *ngIf="selectedCategoria.TIPO" type="text" placeholder="Tipo" class="input-field" />
-        <input *ngIf="selectedCategoria.COLOR" type="text" placeholder="Color" class="input-field" />
-        <input *ngIf="selectedCategoria.DIMENSION" type="text" placeholder="Dimensión" class="input-field" />
-          
-      </div>
+      <select *ngIf="!manualCategoria" class="input-field" [(ngModel)]="ambienteTerm" (change)="onAmbienteChange()">
+        <option value="">Todos los Ambientes</option>
+        <option *ngFor="let ambiente of ambientesInventario" [value]="ambiente">{{ ambiente }}</option>
+      </select>
+      <!-- Botón para alternar entre select e input manual -->
+      <button (click)="toggleManualCategoria()" class="btn btn-search">
+        {{ manualCategoria ? 'Usar Selects' : 'Búsqueda Manual' }}
+      </button>
     </div>
   </div>
   

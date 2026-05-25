@@ -8,37 +8,27 @@
           <input
             type="text"
             id="codigoInput"
-            placeholder="Ingrese el codigo del bien o nombre/descripcion"
+            placeholder="ID"
             class="input-field"
-            [(ngModel)]="searchTerm"
-            (input)="onSearchTermChange()" />
+            [(ngModel)]="idTerm"
+            (input)="onIdTermChange()" />
 
           <input
-            *ngIf="manualCategoria"
             type="text"
-            placeholder="Escriba la categoria"
+            placeholder="Nombre, descripcion, modelo, color..."
             class="input-field"
-            [(ngModel)]="categoriaManual"
-            (input)="onCategoriaManualChange()" />
+            [(ngModel)]="nombreTerm"
+            (input)="onNombreTermChange()" />
 
-          <input type="text" placeholder="Ultima Ubicacion" class="input-field" [(ngModel)]="ubicacionTerm" (input)="onUbicacionChange()" />
-          <input type="text" placeholder="Ultimo Ambiente" class="input-field" [(ngModel)]="ambienteTerm" (input)="onAmbienteChange()" />
+          <select id="categoriaSelect" class="input-field" (change)="onCategoriaChange($event)">
+            <option value="">Todas las Categorias</option>
+            <option *ngFor="let categoria of categorias" [value]="categoria.id">{{ categoria.NOMBRE_CATEGORIA }}</option>
+          </select>
 
-          <div *ngIf="!manualCategoria">
-            <select id="categoriaSelect" class="input-field" (change)="onCategoriaChange($event)">
-              <option value="">Todas las Categorias</option>
-              <option *ngFor="let categoria of categorias" [value]="categoria.id">{{ categoria.NOMBRE_CATEGORIA }}</option>
-            </select>
-          </div>
-
-          <button (click)="toggleManualCategoria()" class="btn btn-search">Busqueda Manual</button>
-
-          <div *ngIf="selectedCategoria" class="dynamic-filters">
-            <input *ngIf="selectedCategoria.MODELO" type="text" placeholder="Modelo" class="input-field" />
-            <input *ngIf="selectedCategoria.TIPO" type="text" placeholder="Tipo" class="input-field" />
-            <input *ngIf="selectedCategoria.COLOR" type="text" placeholder="Color" class="input-field" />
-            <input *ngIf="selectedCategoria.DIMENSION" type="text" placeholder="Dimension" class="input-field" />
-          </div>
+          <select class="input-field" [(ngModel)]="ambienteTerm" (change)="onAmbienteChange()">
+            <option value="">Todos los Ambientes</option>
+            <option *ngFor="let ambiente of ambientesInventario" [value]="ambiente">{{ ambiente }}</option>
+          </select>
         </div>
       </div>
 

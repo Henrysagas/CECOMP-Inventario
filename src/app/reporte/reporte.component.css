@@ -64,6 +64,15 @@ h2 {
   flex-wrap: wrap;
 }
 
+.observaciones-filter {
+  align-items: center;
+}
+
+.observaciones-header {
+  flex: 1 1 auto;
+  margin-bottom: 0;
+}
+
 .filter-field,
 .consulta-row {
   display: flex;

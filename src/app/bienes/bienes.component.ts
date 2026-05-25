@@ -30,12 +30,13 @@ export class BienesComponent implements OnInit {
   errorBienes = '';
   paginaActual = 1;
   tamanioPagina = 5;
-  searchTerm = '';
+  idTerm = '';
+  nombreTerm = '';
   manualCategoria = false;
   categoriaManual = '';
-  ubicacionTerm = '';
   ambienteTerm = '';
   fechaSeleccionada = '';
+  ambientesInventario: string[] = [];
 
   bienesFueraInventario: Bien[] = [];
   bienesFueraFiltrados: Bien[] = [];
@@ -73,6 +74,7 @@ export class BienesComponent implements OnInit {
       (data: any[]) => {
         this.bienes = data.map((b) => this.listado.mapBien(b));
         this.bienesFiltrados = this.bienes.filter((bien) => this.listado.estaEnCecomp(bien));
+        this.ambientesInventario = this.obtenerAmbientesInventario();
         this.bienesFueraInventario = this.bienes.filter((bien) => !this.listado.estaEnCecomp(bien));
         this.bienesFueraFiltrados = [...this.bienesFueraInventario];
         this.ajustarPaginaActual();
@@ -120,6 +122,8 @@ export class BienesComponent implements OnInit {
   toggleManualCategoria(): void {
     this.manualCategoria = !this.manualCategoria;
     this.categoriaManual = '';
+    this.ambienteTerm = '';
+    this.selectedCategoria = null;
     this.buscarBienes();
   }
 
@@ -137,7 +141,11 @@ export class BienesComponent implements OnInit {
     this.buscarBienes();
   }
 
-  onSearchTermChange(): void {
+  onIdTermChange(): void {
+    this.buscarBienes();
+  }
+
+  onNombreTermChange(): void {
     this.buscarBienes();
   }
 
@@ -150,10 +158,10 @@ export class BienesComponent implements OnInit {
   onTabChange(index: number): void {
     if (index === 0) {
       this.fechaSeleccionada = '';
-      this.searchTerm = '';
+      this.idTerm = '';
+      this.nombreTerm = '';
       this.manualCategoria = false;
       this.categoriaManual = '';
-      this.ubicacionTerm = '';
       this.ambienteTerm = '';
       this.selectedCategoria = null;
     } else if (index === 1) {
@@ -166,10 +174,6 @@ export class BienesComponent implements OnInit {
       this.paginaActualFuera = 1;
     }
 
-    this.buscarBienes();
-  }
-
-  onUbicacionChange(): void {
     this.buscarBienes();
   }
 
@@ -282,8 +286,9 @@ export class BienesComponent implements OnInit {
       manualCategoria: this.manualCategoria,
       categoriaManual: this.categoriaManual,
       selectedCategoria: this.selectedCategoria,
-      searchTerm: this.searchTerm,
-      ubicacionTerm: this.ubicacionTerm,
+      idTerm: this.idTerm,
+      nombreTerm: this.nombreTerm,
+      ubicacionTerm: '',
       ambienteTerm: this.ambienteTerm,
       fechaSeleccionada: this.fechaSeleccionada
     };
@@ -382,6 +387,15 @@ export class BienesComponent implements OnInit {
 
   private ajustarPaginaActualFuera(): void {
     this.paginaActualFuera = Math.min(Math.max(this.paginaActualFuera, 1), this.totalPaginasFuera);
+  }
+
+  private obtenerAmbientesInventario(): string[] {
+    const ambientes = this.bienes
+      .filter((bien) => this.listado.estaEnCecomp(bien))
+      .map((bien) => bien.movimientos[0]?.ambiente?.NOMBRE_AMBIENTE || '')
+      .filter((ambiente) => !!ambiente);
+
+    return [...new Set(ambientes)].sort((a, b) => a.localeCompare(b));
   }
 
   private parseLocalDateStart(value: string): Date {

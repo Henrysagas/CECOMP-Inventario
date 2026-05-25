@@ -8,7 +8,8 @@ export interface BienesInventarioFilters {
   manualCategoria: boolean;
   categoriaManual: string;
   selectedCategoria: Categoria | null;
-  searchTerm: string;
+  idTerm: string;
+  nombreTerm: string;
   ubicacionTerm: string;
   ambienteTerm: string;
   fechaSeleccionada: string;
@@ -82,23 +83,23 @@ export class BienesListadoService {
         match = match && bien.ID_CATEGORIA === filters.selectedCategoria.id;
       }
 
-      if (filters.searchTerm) {
-        const term = filters.searchTerm.toLowerCase();
-        match =
-          match &&
-          (bien.codigo.toString().includes(term) ||
-            bien.DESCRIPCION?.toLowerCase().includes(term) ||
-            bien.MODELO?.toLowerCase().includes(term) ||
-            bien.NUMERO_SERIE?.toLowerCase().includes(term));
+      if (filters.idTerm) {
+        match = match && bien.codigo.toString().includes(filters.idTerm.toLowerCase());
+      }
+
+      if (filters.nombreTerm) {
+        match = match && this.coincideConDatosEscribibles(bien, filters.nombreTerm);
       }
 
       if (filters.ubicacionTerm) {
-        const ubicacionActual = bien.movimientos[0]?.ambiente?.ubicacion?.NOMBRE || 'Sin Movimiento';
+        const ubicacionActual =
+          this.getMovimientoEnFecha(bien, filters.fechaSeleccionada)?.ambiente?.ubicacion?.NOMBRE || 'Sin Movimiento';
         match = match && ubicacionActual.toLowerCase().includes(filters.ubicacionTerm.toLowerCase());
       }
 
       if (filters.ambienteTerm) {
-        const ambienteActual = bien.movimientos[0]?.ambiente?.NOMBRE_AMBIENTE || 'Sin Movimiento';
+        const ambienteActual =
+          this.getMovimientoEnFecha(bien, filters.fechaSeleccionada)?.ambiente?.NOMBRE_AMBIENTE || 'Sin Movimiento';
         match = match && ambienteActual.toLowerCase().includes(filters.ambienteTerm.toLowerCase());
       }
 
@@ -124,10 +125,8 @@ export class BienesListadoService {
       if (filters.searchTerm) {
         const term = filters.searchTerm.toLowerCase();
         match =
-          bien.DESCRIPCION?.toLowerCase().includes(term) ||
           bien.codigo.toString().includes(term) ||
-          bien.MODELO?.toLowerCase().includes(term) ||
-          bien.NUMERO_SERIE?.toLowerCase().includes(term);
+          this.coincideConDatosEscribibles(bien, term);
       }
 
       if (filters.ubicacionTerm) {
@@ -198,6 +197,21 @@ export class BienesListadoService {
   estaEnCecomp(bien: Bien, fechaSeleccionada = ''): boolean {
     const ubicacion = this.getMovimientoEnFecha(bien, fechaSeleccionada)?.ambiente?.ubicacion?.NOMBRE || '';
     return ubicacion.toLowerCase().includes('cecomp');
+  }
+
+  private coincideConDatosEscribibles(bien: Bien, term: string): boolean {
+    const normalizedTerm = term.toLowerCase();
+    const valores = [
+      bien.DESCRIPCION,
+      bien.MODELO,
+      bien.NUMERO_SERIE,
+      bien.TIPO,
+      bien.COLOR,
+      bien.DIMENSION,
+      bien.categoria?.NOMBRE_CATEGORIA
+    ];
+
+    return valores.some((value) => (value || '').toString().toLowerCase().includes(normalizedTerm));
   }
 
   private getMovimientoEnFecha(bien: Bien, fechaSeleccionada: string): Detalle | undefined {

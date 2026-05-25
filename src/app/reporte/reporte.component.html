@@ -251,5 +251,64 @@
         </nz-table>
       </div>
     </nz-tab>
+
+    <nz-tab nzTitle="Reporte de Observaciones">
+      <div class="filters-panel observaciones-filter">
+        <div class="consulta-history-header observaciones-header">
+          <h3>Observaciones reportadas</h3>
+          <span>{{ observacionesReportadas.length }} registros</span>
+        </div>
+
+        <button
+          *ngIf="canGenerateReports"
+          nz-button
+          nzType="primary"
+          class="btn-generar-reporte"
+          (click)="generarPDFObservaciones()"
+          [disabled]="observacionesReportadas.length === 0">
+          Generar PDF
+        </button>
+      </div>
+
+      <div class="tabla-contenedor">
+        <nz-table
+          #observacionesTable
+          [nzBordered]="false"
+          [nzData]="observacionesReportadas"
+          [nzSize]="'middle'"
+          [nzScroll]="{ x: '100%', y: 'calc(100vh - 285px)' }"
+          [nzShowPagination]="true"
+          [nzPageSize]="8"
+          [nzFrontPagination]="true"
+          [nzTotal]="observacionesReportadas.length"
+          class="table consulta-table observaciones-table">
+          <thead>
+            <tr>
+              <th nzWidth="15%">ID Bien</th>
+              <th nzWidth="20%">Categoria</th>
+              <th nzWidth="20%">Tipo de observacion</th>
+              <th nzWidth="45%">Observacion</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="cargandoObservaciones">
+              <td colspan="4" class="empty-cell">Cargando observaciones...</td>
+            </tr>
+            <tr *ngIf="!cargandoObservaciones && errorObservaciones">
+              <td colspan="4" class="empty-cell state-error">{{ errorObservaciones }}</td>
+            </tr>
+            <tr *ngFor="let observacion of observacionesTable.data">
+              <td>{{ getObservacionBienId(observacion) }}</td>
+              <td>{{ getObservacionCategoria(observacion) }}</td>
+              <td>{{ observacion.tipo_evento || 'Sin tipo' }}</td>
+              <td>{{ observacion.observacion || 'Sin observacion' }}</td>
+            </tr>
+            <tr *ngIf="!cargandoObservaciones && !errorObservaciones && observacionesReportadas.length === 0">
+              <td colspan="4" class="empty-cell">No hay observaciones reportadas.</td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+    </nz-tab>
   </nz-tabset>
 </div>

@@ -29,6 +29,8 @@ import { TipoModalidad } from '../models/tipo-modalidad';
 import { TipoModalidadService } from '../services/tipo-modalidad.service';
 import { LogVisitaService } from '../services/log-visita.service';
 import { AuthService } from '../auth.service';
+import { ObservacionBien } from '../models/observacion-bien';
+import { ObservacionBienService } from '../services/observacion-bien.service';
 
 interface ConsultaGenerada {
   id: number;
@@ -88,6 +90,9 @@ export class ReporteComponent implements OnInit {
   bienesFiltradosPorCategoria: Bien[] = [];
   consultasGeneradas: ConsultaGenerada[] = [];
   consultaSeleccionadaId: number | null = null;
+  observacionesReportadas: ObservacionBien[] = [];
+  cargandoObservaciones = false;
+  errorObservaciones = '';
 
   constructor(
     private router: Router, 
@@ -99,7 +104,8 @@ export class ReporteComponent implements OnInit {
     private ambienteService: AmbienteService,
     private tipoModalidadService: TipoModalidadService,
     private logVisitaService: LogVisitaService,
-    private authService: AuthService
+    private authService: AuthService,
+    private observacionBienService: ObservacionBienService
   ) {}
 
   ngOnInit(): void {
@@ -113,6 +119,7 @@ export class ReporteComponent implements OnInit {
     this.loadAmbientes(); 
     this.loadCategorias(); 
     this.loadTipoModalidades();
+    this.loadObservaciones();
   }
   buscarBienesPorUbicacion(registrarConsulta: boolean = false): void {
     if (!this.selectedAmbienteId) {
@@ -413,6 +420,23 @@ export class ReporteComponent implements OnInit {
     );
   }
 
+  loadObservaciones(): void {
+    this.cargandoObservaciones = true;
+    this.errorObservaciones = '';
+
+    this.observacionBienService.getObservaciones().subscribe(
+      (observaciones: ObservacionBien[]) => {
+        this.observacionesReportadas = observaciones;
+        this.cargandoObservaciones = false;
+      },
+      error => {
+        console.error('Error al cargar observaciones:', error);
+        this.errorObservaciones = 'No se pudieron cargar las observaciones reportadas.';
+        this.cargandoObservaciones = false;
+      }
+    );
+  }
+
   onUbicacionChange(): void {
     this.selectedAmbienteId = null;
     this.ambientesFiltrados = [];
@@ -514,6 +538,80 @@ export class ReporteComponent implements OnInit {
 
     doc.save('reporte-consulta.pdf');
     }
+
+  async generarPDFObservaciones(): Promise<void> {
+    if (this.observacionesReportadas.length === 0) {
+      return;
+    }
+
+    this.logVisitaService.registrarAccionLimitada('descargar pdf de reporte de observaciones', '/reportes', {
+      total_observaciones: this.observacionesReportadas.length
+    }, 60000).subscribe();
+
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const logo = await this.loadImage('cecomp.png');
+
+    if (logo) {
+      doc.addImage(logo, 'PNG', 16, 15, 30, 15);
+    }
+
+    doc.setFont('times', 'normal');
+    doc.setFontSize(9);
+    doc.text('Universidad Nacional del Santa', 52, 18);
+    doc.text('Direccion General de Administracion', 52, 24);
+    doc.text('Oficina de Control Patrimonial', 52, 30);
+
+    doc.setFont('times', 'bold');
+    doc.setFontSize(13);
+    doc.text('REPORTE DE OBSERVACIONES DE BIENES', 105, 44, { align: 'center' });
+
+    doc.setFont('times', 'normal');
+    this.drawPdfField(doc, 'Fecha:', new Date().toLocaleDateString('es-PE'), 16, 55, 68);
+    this.drawPdfField(doc, 'Total:', String(this.observacionesReportadas.length), 112, 55, 64);
+
+    autoTable(doc, {
+      startY: 75,
+      head: [['ID Bien', 'Categoria', 'Tipo de Observacion', 'Observacion']],
+      body: this.observacionesReportadas.map(observacion => [
+        this.getObservacionBienId(observacion),
+        this.wrapPdfCellText(doc, this.getObservacionCategoria(observacion), 26),
+        this.wrapPdfCellText(doc, observacion.tipo_evento || 'Sin tipo', 36),
+        this.wrapPdfCellText(doc, observacion.observacion || 'Sin observacion', 86)
+      ]),
+      theme: 'grid',
+      styles: {
+        font: 'times',
+        fontSize: 8.2,
+        cellPadding: 2.2,
+        lineColor: [60, 60, 60],
+        lineWidth: 0.15,
+        overflow: 'linebreak',
+        valign: 'middle'
+      },
+      headStyles: {
+        fillColor: [211, 47, 47],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        halign: 'center'
+      },
+      columnStyles: {
+        0: { cellWidth: 24, halign: 'center' },
+        1: { cellWidth: 30, overflow: 'linebreak' },
+        2: { cellWidth: 40, overflow: 'linebreak' },
+        3: { cellWidth: 84, overflow: 'linebreak' }
+      },
+      margin: { left: 16, right: 16, bottom: 16 }
+    });
+
+    const totalPages = doc.getNumberOfPages();
+    for (let page = 1; page <= totalPages; page++) {
+      doc.setPage(page);
+      doc.setFontSize(8);
+      doc.text(`Pagina ${page} de ${totalPages}`, 194, 291, { align: 'right' });
+    }
+
+    doc.save('reporte-observaciones.pdf');
+  }
 
   verConsultaGenerada(consulta: ConsultaGenerada): void {
     this.consultaSeleccionadaId = consulta.id;
@@ -675,6 +773,17 @@ export class ReporteComponent implements OnInit {
 
   getEstadoBien(bien: Bien): string {
     return bien.movimientos?.[0]?.ESTADO || 'Sin Estado';
+  }
+
+  getObservacionBienId(observacion: ObservacionBien): string {
+    return String(observacion.bien?.codigo || observacion.ID_BIEN || 'Sin ID');
+  }
+
+  getObservacionCategoria(observacion: ObservacionBien): string {
+    const bien = observacion.bien;
+    return bien?.categoria?.NOMBRE_CATEGORIA ||
+      this.categorias.find(categoria => categoria.id === bien?.ID_CATEGORIA)?.NOMBRE_CATEGORIA ||
+      'Sin categoria';
   }
 
   private startOfDay(date: Date): Date {

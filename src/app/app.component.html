@@ -16,8 +16,8 @@
   </button>
   <nz-sider class="menu-sidebar light-theme"
   nzCollapsible
-    nzWidth="350px"
-    [nzCollapsedWidth]="isMobile ? 0 : 80"
+    [nzWidth]="isCompactDesktop ? '300px' : '350px'"
+    [nzCollapsedWidth]="isMobile ? 0 : 76"
     nzBreakpoint="md"
     [(nzCollapsed)]="isCollapsed"
     [nzTrigger]="null">
@@ -66,7 +66,7 @@
               Usuarios
             </a>
           </li>
-          <li *ngIf="isLoggedIn && isAdmin" nz-menu-item nzMatchRouter>
+          <li *ngIf="isLoggedIn && isSuperAdmin" nz-menu-item nzMatchRouter>
             <a routerLink="/log-visitas" (click)="closeMobileMenu()">
               <span class="sidebar-menu-icon" nz-icon nzType="history" nzTheme="outline"></span>
               Log de visitas

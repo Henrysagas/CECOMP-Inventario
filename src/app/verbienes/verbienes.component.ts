@@ -26,13 +26,14 @@ export class VerbienesComponent implements OnInit {
   errorBienes = '';
   paginaActual = 1;
   tamanioPagina = 5;
-  searchTerm = '';
+  idTerm = '';
+  nombreTerm = '';
   categoriaManual = '';
-  ubicacionTerm = '';
   ambienteTerm = '';
   manualCategoria = false;
   selectedCategoria: any = null;
   fechaSeleccionada = '';
+  ambientesInventario: string[] = [];
 
   bienesFueraInventario: Bien[] = [];
   bienesFueraFiltrados: Bien[] = [];
@@ -67,6 +68,7 @@ export class VerbienesComponent implements OnInit {
       (data: any[]) => {
         this.bienes = data.map((b) => this.listado.mapBien(b));
         this.bienesFiltrados = this.bienes.filter((bien) => this.listado.estaEnCecomp(bien));
+        this.ambientesInventario = this.obtenerAmbientesInventario();
         this.bienesFueraInventario = this.bienes.filter((bien) => !this.listado.estaEnCecomp(bien));
         this.bienesFueraFiltrados = [...this.bienesFueraInventario];
         this.ajustarPaginaActual();
@@ -81,7 +83,11 @@ export class VerbienesComponent implements OnInit {
     );
   }
 
-  onSearchTermChange(): void {
+  onIdTermChange(): void {
+    this.buscarBienes();
+  }
+
+  onNombreTermChange(): void {
     this.buscarBienes();
   }
 
@@ -92,10 +98,6 @@ export class VerbienesComponent implements OnInit {
   }
 
   onFechaSeleccionadaChange(): void {
-    this.buscarBienes();
-  }
-
-  onUbicacionChange(): void {
     this.buscarBienes();
   }
 
@@ -122,10 +124,10 @@ export class VerbienesComponent implements OnInit {
   onTabChange(index: number): void {
     if (index === 0) {
       this.fechaSeleccionada = '';
-      this.searchTerm = '';
+      this.idTerm = '';
+      this.nombreTerm = '';
       this.manualCategoria = false;
       this.categoriaManual = '';
-      this.ubicacionTerm = '';
       this.ambienteTerm = '';
       this.selectedCategoria = null;
       this.buscarBienes();
@@ -246,8 +248,9 @@ export class VerbienesComponent implements OnInit {
       manualCategoria: this.manualCategoria,
       categoriaManual: this.categoriaManual,
       selectedCategoria: this.selectedCategoria,
-      searchTerm: this.searchTerm,
-      ubicacionTerm: this.ubicacionTerm,
+      idTerm: this.idTerm,
+      nombreTerm: this.nombreTerm,
+      ubicacionTerm: '',
       ambienteTerm: this.ambienteTerm,
       fechaSeleccionada: this.fechaSeleccionada
     };
@@ -346,6 +349,15 @@ export class VerbienesComponent implements OnInit {
 
   private ajustarPaginaActualFuera(): void {
     this.paginaActualFuera = Math.min(Math.max(this.paginaActualFuera, 1), this.totalPaginasFuera);
+  }
+
+  private obtenerAmbientesInventario(): string[] {
+    const ambientes = this.bienes
+      .filter((bien) => this.listado.estaEnCecomp(bien))
+      .map((bien) => bien.movimientos[0]?.ambiente?.NOMBRE_AMBIENTE || '')
+      .filter((ambiente) => !!ambiente);
+
+    return [...new Set(ambientes)].sort((a, b) => a.localeCompare(b));
   }
 
   private parseLocalDateStart(value: string): Date {

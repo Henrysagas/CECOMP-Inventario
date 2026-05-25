@@ -19,6 +19,7 @@ import { LogVisitaService } from './services/log-visita.service';
 export class AppComponent implements OnInit {
   isCollapsed = false;
   isMobile = false;
+  isCompactDesktop = false;
   isLoggedIn = false;
   isAdmin = false;
   isSuperAdmin = false;
@@ -76,11 +77,17 @@ export class AppComponent implements OnInit {
       return;
     }
 
+    const width = window.innerWidth;
     const wasMobile = this.isMobile;
-    this.isMobile = window.innerWidth <= 768;
+    this.isMobile = width <= 768;
+    this.isCompactDesktop = width > 768 && width <= 1600;
 
     if (this.isMobile && !wasMobile) {
       this.isCollapsed = true;
+    }
+
+    if (!this.isMobile && wasMobile) {
+      this.isCollapsed = false;
     }
   }
 

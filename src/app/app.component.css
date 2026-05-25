@@ -268,3 +268,65 @@ nz-content {
     font-size: 16px;
   }
 }
+
+@media (min-width: 769px) and (max-width: 1600px) {
+  :host,
+  .app-layout {
+    font-size: 16px;
+  }
+
+  .menu-sidebar {
+    width: min(300px, 24vw);
+    font-size: 16px;
+  }
+
+  ::ng-deep .menu-sidebar.ant-layout-sider {
+    max-width: min(300px, 24vw) !important;
+  }
+
+  ::ng-deep .menu-sidebar .ant-menu {
+    font-size: 16px;
+  }
+
+  ::ng-deep .menu-sidebar .ant-menu-item,
+  ::ng-deep .menu-sidebar .ant-menu-submenu-title,
+  ::ng-deep .menu-sidebar .ant-menu-item a {
+    font-size: 16px;
+  }
+
+  ::ng-deep .menu-sidebar .sidebar-menu-icon {
+    width: 30px;
+    height: 30px;
+    margin-right: 8px;
+    font-size: 16px;
+  }
+
+  .sidebar-logo {
+    height: 118px;
+  }
+
+  .sidebar-logo img {
+    height: 78px;
+  }
+
+  .inner-content {
+    padding: clamp(0.75rem, 1.35vw, 1.35rem);
+    border-width: 2px;
+  }
+}
+
+@media (min-width: 769px) and (max-height: 900px) {
+  .sidebar-logo {
+    height: 108px;
+  }
+
+  .sidebar-logo img {
+    height: 72px;
+  }
+
+  ::ng-deep .menu-sidebar .ant-menu-item,
+  ::ng-deep .menu-sidebar .ant-menu-submenu-title {
+    min-height: 38px;
+    line-height: 38px;
+  }
+}

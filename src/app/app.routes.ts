@@ -35,7 +35,7 @@ export const routes: Routes = [
   { path: 'ambientes', component: UbicacionesComponent, canActivate: [authGuard], data: { roles: INVENTORY_ROLES } },
   { path: 'transferencia', component: TransferenciaComponent, canActivate: [authGuard], data: { roles: INVENTORY_ROLES } },
   { path: 'observaciones', component: ObservacionesBienComponent, canActivate: [authGuard], data: { roles: INVENTORY_ROLES } },
-  { path: 'log-visitas', component: LogVisitasComponent, canActivate: [authGuard], data: { roles: INVENTORY_ROLES }},
+  { path: 'log-visitas', component: LogVisitasComponent, canActivate: [authGuard], data: { roles: SUPER_ADMIN_ROLES }},
 
   { path: 'register', component: RegisterComponent, canActivate: [authGuard], data: { roles: SUPER_ADMIN_ROLES }},
   { path: 'usuarios', component: UsuariosComponent, canActivate: [authGuard], data: { roles: SUPER_ADMIN_ROLES }},
