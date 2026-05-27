@@ -3,9 +3,13 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
+    "prestart": "node scripts/generate-env.js",
     "start": "ng serve",
+    "prebuild": "node scripts/generate-env.js",
     "build": "ng build",
+    "prewatch": "node scripts/generate-env.js",
     "watch": "ng build --watch --configuration development",
+    "pretest": "node scripts/generate-env.js",
     "test": "ng test",
     "serve:ssr:InventarioFront": "node dist/inventario-front/server/server.mjs"
   },

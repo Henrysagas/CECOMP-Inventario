@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { API_BASE_URL } from '../config/api.config';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Detalle } from '../models/detalle';
@@ -7,7 +8,7 @@ import { Detalle } from '../models/detalle';
   providedIn: 'root'
 })
 export class DetalleService {
-  private apiUrl = 'http://localhost:8000/api/movimientos'; // Endpoint para movimientos
+  private apiUrl = `${API_BASE_URL}/movimientos`; // Endpoint para movimientos
 
   constructor(private http: HttpClient) {}
 
@@ -18,11 +19,11 @@ export class DetalleService {
 
   // Obtener movimientos por bien
   getMovimientosByBien(bienId: number): Observable<Detalle[]> {
-    return this.http.get<Detalle[]>(`http://localhost:8000/api/bienes/${bienId}/movimientos`);
+    return this.http.get<Detalle[]>(`${API_BASE_URL}/bienes/${bienId}/movimientos`);
   }
 
   agregarMovimiento(id: number, nuevoMovimiento: Detalle): Observable<Detalle> {
-    return this.http.post<Detalle>(`http://localhost:8000/api/bienes/${id}/movimientos`, nuevoMovimiento);
+    return this.http.post<Detalle>(`${API_BASE_URL}/bienes/${id}/movimientos`, nuevoMovimiento);
   }
 
   // Otros métodos para actualizar y eliminar movimientos si es necesario

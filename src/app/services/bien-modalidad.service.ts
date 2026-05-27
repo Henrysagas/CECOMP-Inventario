@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { API_BASE_URL } from '../config/api.config';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Modalidad } from '../models/modalidad';
@@ -9,7 +10,7 @@ import { BienModalidad  } from '../models/bien-modalidad';
   providedIn: 'root'
 })
 export class BienModalidadService {
-  private apiUrl = 'http://localhost:8000/api/modalidades'; // URL de tu API en Laravel
+  private apiUrl = `${API_BASE_URL}/modalidades`; // URL de tu API en Laravel
 
   constructor(private http: HttpClient) {}
 

@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { API_BASE_URL } from '../config/api.config';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Bien } from '../models/bien';
@@ -11,11 +12,11 @@ import { Historial } from '../models/historial';
 export class BienService {
 
 
-  private apiUrl = 'http://localhost:8000/api/bienes';
-  private movimientosUrl = 'http://localhost:8000/api/movimientos'; // Endpoint para movimientos
+  private apiUrl = `${API_BASE_URL}/bienes`;
+  private movimientosUrl = `${API_BASE_URL}/movimientos`; // Endpoint para movimientos
  
   getBienesFueraInventario(): Observable<Bien[]> {
-    return this.http.get<Bien[]>(`http://localhost:8000/api/bienesfuera`);
+    return this.http.get<Bien[]>(`${API_BASE_URL}/bienesfuera`);
   }
   constructor(private http: HttpClient) {}
 

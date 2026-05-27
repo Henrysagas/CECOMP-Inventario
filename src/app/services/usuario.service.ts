@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { API_BASE_URL } from '../config/api.config';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -8,12 +9,12 @@ import { Usuario } from '../models/usuario';
   providedIn: 'root',
 })
 export class UsuarioService {
-  private apiUrl = 'http://localhost:8000/api/usuarios'; // URL de tu API
+  private apiUrl = `${API_BASE_URL}/usuarios`; // URL de tu API
 
   constructor(private http: HttpClient) {}
   
   getBienesPorUsuario(idUsuario: number): Observable<any[]> {
-    return this.http.get<any[]>(`http://localhost:8000/api/bienes?usuario=${idUsuario}`);
+    return this.http.get<any[]>(`${API_BASE_URL}/bienes?usuario=${idUsuario}`);
   }
   
   // Método para obtener usuarios con rol de administrador

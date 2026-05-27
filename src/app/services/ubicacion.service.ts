@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { API_BASE_URL } from '../config/api.config';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Ubicacion } from '../models/ubicacion';
@@ -7,7 +8,7 @@ import { Ubicacion } from '../models/ubicacion';
   providedIn: 'root'
 })
 export class UbicacionService {
-  private apiUrl = 'http://localhost:8000/api/ubicaciones';
+  private apiUrl = `${API_BASE_URL}/ubicaciones`;
 
   constructor(private http: HttpClient) { }
 

@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { API_BASE_URL } from './config/api.config';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
@@ -11,7 +12,7 @@ export class AuthService {
   static readonly ROLE_USER = 2;
   static readonly ROLE_SUPER_ADMIN = 3;
 
-  private apiUrl = 'http://localhost:8000/api/usuarios';
+  private apiUrl = `${API_BASE_URL}/usuarios`;
   private token: string = '';
   private isLoggedInSubject = new BehaviorSubject<boolean>(this.checkInitialLoginStatus());
   isLoggedIn$ = this.isLoggedInSubject.asObservable();

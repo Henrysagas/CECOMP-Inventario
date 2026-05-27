@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { API_BASE_URL } from '../config/api.config';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
@@ -11,7 +12,7 @@ import {
   providedIn: 'root'
 })
 export class ObservacionBienService {
-  private apiUrl = 'http://localhost:8000/api/observaciones';
+  private apiUrl = `${API_BASE_URL}/observaciones`;
 
   constructor(private http: HttpClient) {}
 

@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { API_BASE_URL } from '../config/api.config';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -7,7 +8,7 @@ import { catchError } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class LogVisitaService {
-  private apiUrl = 'http://localhost:8000/api/log-visitas';
+  private apiUrl = `${API_BASE_URL}/log-visitas`;
   private ultimosRegistros = new Map<string, number>();
 
   constructor(private http: HttpClient) {}

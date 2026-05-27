@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { API_BASE_URL } from '../config/api.config';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Movimiento } from '../models/movimiento';
@@ -7,7 +8,7 @@ import { Movimiento } from '../models/movimiento';
   providedIn: 'root'
 })
 export class MovimientoService {
-  private apiUrl = 'http://localhost:8000/api/movimientos';
+  private apiUrl = `${API_BASE_URL}/movimientos`;
 
   constructor(private http: HttpClient) {}
 

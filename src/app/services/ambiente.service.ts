@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { API_BASE_URL } from '../config/api.config';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Ambiente } from '../models/ambiente';
@@ -7,18 +8,18 @@ import { Ambiente } from '../models/ambiente';
   providedIn: 'root'
 })
 export class AmbienteService {
-  private apiUrl = 'http://localhost:8000/api/ubicaciones';
+  private apiUrl = `${API_BASE_URL}/ubicaciones`;
 
   constructor(private http: HttpClient) { }
 
   // Obtener todos los ambientes
   getAmbientes(): Observable<Ambiente[]> {
-    return this.http.get<Ambiente[]>('http://localhost:8000/api/ambientes');
+    return this.http.get<Ambiente[]>(`${API_BASE_URL}/ambientes`);
   }
 
 // Obtener un ambiente específico
 getAmbiente(idAmbiente: number): Observable<Ambiente> {
-  return this.http.get<Ambiente>(`http://localhost:8000/api/ambientes/${idAmbiente}`); // Cambiado para apuntar a la URL correcta
+  return this.http.get<Ambiente>(`${API_BASE_URL}/ambientes/${idAmbiente}`); // Cambiado para apuntar a la URL correcta
 }
 
 
@@ -35,11 +36,11 @@ getAmbiente(idAmbiente: number): Observable<Ambiente> {
 
   // Actualizar un ambiente existente
   updateAmbiente(idAmbiente: number, ambiente: Partial<Ambiente> & { nombre?: string }): Observable<Ambiente> {
-    return this.http.put<Ambiente>(`http://localhost:8000/api/ambientes/${idAmbiente}`, ambiente);
+    return this.http.put<Ambiente>(`${API_BASE_URL}/ambientes/${idAmbiente}`, ambiente);
   }
 
   // Eliminar un ambiente
   eliminarAmbiente(idAmbiente: number): Observable<void> {
-    return this.http.delete<void>(`http://localhost:8000/api/ambientes/${idAmbiente}`);
+    return this.http.delete<void>(`${API_BASE_URL}/ambientes/${idAmbiente}`);
   }
 }

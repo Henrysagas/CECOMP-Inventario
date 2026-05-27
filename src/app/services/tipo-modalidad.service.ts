@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { API_BASE_URL } from '../config/api.config';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { TipoModalidad } from '../models/tipo-modalidad';
@@ -7,7 +8,7 @@ import { TipoModalidad } from '../models/tipo-modalidad';
     providedIn: 'root'
 })
 export class TipoModalidadService {
-    private apiUrl = 'http://localhost:8000/api/tipo-modalidad'; // Cambia esta URL según tu API
+    private apiUrl = `${API_BASE_URL}/tipo-modalidad`; // Cambia esta URL según tu API
 
     constructor(private http: HttpClient) {}
 

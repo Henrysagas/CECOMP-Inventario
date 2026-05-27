@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { API_BASE_URL } from '../config/api.config';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { RolUsuario } from '../models/rol-usuario';
@@ -7,7 +8,7 @@ import { RolUsuario } from '../models/rol-usuario';
   providedIn: 'root'
 })
 export class RolUsuarioService {
-  private apiUrl = 'http://localhost:8000/api/roles-usuarios';
+  private apiUrl = `${API_BASE_URL}/roles-usuarios`;
 
   constructor(private http: HttpClient) { }
 
