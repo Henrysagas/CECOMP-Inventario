@@ -256,8 +256,60 @@
       <div class="filters-panel observaciones-filter">
         <div class="consulta-history-header observaciones-header">
           <h3>Observaciones reportadas</h3>
-          <span>{{ observacionesReportadas.length }} registros</span>
+          <span>
+            {{ observacionesFiltradas.length }} de {{ observacionesReportadas.length }} registros -
+            PDF: {{ getCantidadObservacionesParaPdf() }}
+          </span>
         </div>
+
+        <div class="filter-field">
+          <label>Tipo de observacion</label>
+          <nz-select
+            [(ngModel)]="selectedTipoObservacion"
+            (ngModelChange)="aplicarFiltrosObservaciones()"
+            nzAllowClear
+            nzPlaceHolder="Todos los tipos">
+            <nz-option
+              *ngFor="let tipo of tiposObservacion"
+              [nzValue]="tipo"
+              [nzLabel]="tipo">
+            </nz-option>
+          </nz-select>
+        </div>
+
+        <div class="filter-field">
+          <label>Categoria</label>
+          <nz-select
+            [(ngModel)]="selectedCategoriaObservacionId"
+            (ngModelChange)="aplicarFiltrosObservaciones()"
+            nzAllowClear
+            nzPlaceHolder="Todas las categorias">
+            <nz-option
+              *ngFor="let categoria of categorias"
+              [nzValue]="categoria.id"
+              [nzLabel]="categoria.NOMBRE_CATEGORIA">
+            </nz-option>
+          </nz-select>
+        </div>
+
+        <div class="filter-field">
+          <label>Buscar ID o texto</label>
+          <input
+            nz-input
+            [(ngModel)]="observacionSearchTerm"
+            (ngModelChange)="aplicarFiltrosObservaciones()"
+            placeholder="ID bien, codigo, tipo u observacion" />
+        </div>
+
+        <label class="selection-control">
+          <input
+            type="checkbox"
+            [checked]="estanTodasObservacionesFiltradasSeleccionadas()"
+            [indeterminate]="hayObservacionesFiltradasSeleccionadas() && !estanTodasObservacionesFiltradasSeleccionadas()"
+            [disabled]="observacionesFiltradas.length === 0"
+            (change)="toggleObservacionesFiltradas($any($event.target).checked)" />
+          Seleccionar filtradas
+        </label>
 
         <button
           *ngIf="canGenerateReports"
@@ -265,7 +317,7 @@
           nzType="primary"
           class="btn-generar-reporte"
           (click)="generarPDFObservaciones()"
-          [disabled]="observacionesReportadas.length === 0">
+          [disabled]="observacionesFiltradas.length === 0">
           Generar PDF
         </button>
       </div>
@@ -274,37 +326,44 @@
         <nz-table
           #observacionesTable
           [nzBordered]="false"
-          [nzData]="observacionesReportadas"
+          [nzData]="observacionesFiltradas"
           [nzSize]="'middle'"
           [nzScroll]="{ x: '100%', y: 'calc(100vh - 285px)' }"
           [nzShowPagination]="true"
           [nzPageSize]="8"
           [nzFrontPagination]="true"
-          [nzTotal]="observacionesReportadas.length"
+          [nzTotal]="observacionesFiltradas.length"
           class="table consulta-table observaciones-table">
           <thead>
             <tr>
+              <th nzWidth="6%">Sel.</th>
               <th nzWidth="15%">ID Bien</th>
-              <th nzWidth="20%">Categoria</th>
+              <th nzWidth="19%">Categoria</th>
               <th nzWidth="20%">Tipo de observacion</th>
-              <th nzWidth="45%">Observacion</th>
+              <th nzWidth="40%">Observacion</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngIf="cargandoObservaciones">
-              <td colspan="4" class="empty-cell">Cargando observaciones...</td>
+              <td colspan="5" class="empty-cell">Cargando observaciones...</td>
             </tr>
             <tr *ngIf="!cargandoObservaciones && errorObservaciones">
-              <td colspan="4" class="empty-cell state-error">{{ errorObservaciones }}</td>
+              <td colspan="5" class="empty-cell state-error">{{ errorObservaciones }}</td>
             </tr>
             <tr *ngFor="let observacion of observacionesTable.data">
+              <td class="selection-cell">
+                <input
+                  type="checkbox"
+                  [checked]="estaObservacionSeleccionada(observacion)"
+                  (change)="toggleObservacionSeleccionada(observacion, $any($event.target).checked)" />
+              </td>
               <td>{{ getObservacionBienId(observacion) }}</td>
               <td>{{ getObservacionCategoria(observacion) }}</td>
               <td>{{ observacion.tipo_evento || 'Sin tipo' }}</td>
               <td>{{ observacion.observacion || 'Sin observacion' }}</td>
             </tr>
-            <tr *ngIf="!cargandoObservaciones && !errorObservaciones && observacionesReportadas.length === 0">
-              <td colspan="4" class="empty-cell">No hay observaciones reportadas.</td>
+            <tr *ngIf="!cargandoObservaciones && !errorObservaciones && observacionesFiltradas.length === 0">
+              <td colspan="5" class="empty-cell">No hay observaciones para los filtros seleccionados.</td>
             </tr>
           </tbody>
         </nz-table>

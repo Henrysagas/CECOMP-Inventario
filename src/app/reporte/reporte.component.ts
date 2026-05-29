@@ -10,6 +10,7 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzInputModule } from 'ng-zorro-antd/input';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -54,6 +55,7 @@ interface ConsultaGenerada {
     NzDatePickerModule, 
     NzTabsModule,
     NzSelectModule,
+    NzInputModule,
     NzPaginationModule
   ],
   templateUrl: './reporte.component.html',
@@ -91,6 +93,12 @@ export class ReporteComponent implements OnInit {
   consultasGeneradas: ConsultaGenerada[] = [];
   consultaSeleccionadaId: number | null = null;
   observacionesReportadas: ObservacionBien[] = [];
+  observacionesFiltradas: ObservacionBien[] = [];
+  tiposObservacion: string[] = [];
+  selectedTipoObservacion: string | null = null;
+  selectedCategoriaObservacionId: number | null = null;
+  observacionSearchTerm = '';
+  selectedObservacionIds = new Set<number>();
   cargandoObservaciones = false;
   errorObservaciones = '';
 
@@ -427,6 +435,12 @@ export class ReporteComponent implements OnInit {
     this.observacionBienService.getObservaciones().subscribe(
       (observaciones: ObservacionBien[]) => {
         this.observacionesReportadas = observaciones;
+        this.tiposObservacion = Array.from(new Set(
+          observaciones
+            .map(observacion => (observacion.tipo_evento || '').trim())
+            .filter(Boolean)
+        )).sort((a, b) => a.localeCompare(b, 'es'));
+        this.aplicarFiltrosObservaciones();
         this.cargandoObservaciones = false;
       },
       error => {
@@ -540,12 +554,21 @@ export class ReporteComponent implements OnInit {
     }
 
   async generarPDFObservaciones(): Promise<void> {
-    if (this.observacionesReportadas.length === 0) {
+    const observacionesSeleccionadas = this.getObservacionesSeleccionadasFiltradas();
+    const observaciones = observacionesSeleccionadas.length > 0
+      ? observacionesSeleccionadas
+      : this.observacionesFiltradas;
+
+    if (observaciones.length === 0) {
       return;
     }
 
     this.logVisitaService.registrarAccionLimitada('descargar pdf de reporte de observaciones', '/reportes', {
-      total_observaciones: this.observacionesReportadas.length
+      total_observaciones: observaciones.length,
+      tipo_observacion: this.selectedTipoObservacion || 'Todos',
+      categoria: this.getCategoriaObservacionSeleccionadaNombre(),
+      busqueda: this.observacionSearchTerm || '',
+      seleccionadas: observacionesSeleccionadas.length
     }, 60000).subscribe();
 
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
@@ -567,12 +590,15 @@ export class ReporteComponent implements OnInit {
 
     doc.setFont('times', 'normal');
     this.drawPdfField(doc, 'Fecha:', new Date().toLocaleDateString('es-PE'), 16, 55, 68);
-    this.drawPdfField(doc, 'Total:', String(this.observacionesReportadas.length), 112, 55, 64);
+    this.drawPdfField(doc, 'Total:', String(observaciones.length), 112, 55, 64);
+    this.drawPdfField(doc, 'Tipo:', this.selectedTipoObservacion || 'Todos', 16, 65, 68);
+    this.drawPdfField(doc, 'Categoria:', this.getCategoriaObservacionSeleccionadaNombre(), 112, 65, 64);
+    this.drawPdfField(doc, 'Busqueda:', this.observacionSearchTerm || 'Sin filtro', 16, 75, 160);
 
     autoTable(doc, {
-      startY: 75,
+      startY: 92,
       head: [['ID Bien', 'Categoria', 'Tipo de Observacion', 'Observacion']],
-      body: this.observacionesReportadas.map(observacion => [
+      body: observaciones.map(observacion => [
         this.getObservacionBienId(observacion),
         this.wrapPdfCellText(doc, this.getObservacionCategoria(observacion), 26),
         this.wrapPdfCellText(doc, observacion.tipo_evento || 'Sin tipo', 36),
@@ -784,6 +810,98 @@ export class ReporteComponent implements OnInit {
     return bien?.categoria?.NOMBRE_CATEGORIA ||
       this.categorias.find(categoria => categoria.id === bien?.ID_CATEGORIA)?.NOMBRE_CATEGORIA ||
       'Sin categoria';
+  }
+
+  aplicarFiltrosObservaciones(): void {
+    const termino = this.normalizarTexto(this.observacionSearchTerm || '');
+
+    this.observacionesFiltradas = this.observacionesReportadas.filter(observacion => {
+      const coincideTipo = !this.selectedTipoObservacion || observacion.tipo_evento === this.selectedTipoObservacion;
+      const coincideCategoria = !this.selectedCategoriaObservacionId ||
+        this.getObservacionCategoriaId(observacion) === this.selectedCategoriaObservacionId;
+
+      if (!coincideTipo || !coincideCategoria) {
+        return false;
+      }
+
+      if (!termino) {
+        return true;
+      }
+
+      const texto = this.normalizarTexto([
+        observacion.id,
+        observacion.ID_BIEN,
+        this.getObservacionBienId(observacion),
+        this.getObservacionCategoria(observacion),
+        observacion.tipo_evento,
+        observacion.observacion,
+        observacion.fecha_evento
+      ].join(' '));
+
+      return texto.includes(termino);
+    });
+  }
+
+  toggleObservacionSeleccionada(observacion: ObservacionBien, checked: boolean): void {
+    if (checked) {
+      this.selectedObservacionIds.add(observacion.id);
+    } else {
+      this.selectedObservacionIds.delete(observacion.id);
+    }
+  }
+
+  toggleObservacionesFiltradas(checked: boolean): void {
+    this.observacionesFiltradas.forEach(observacion => {
+      if (checked) {
+        this.selectedObservacionIds.add(observacion.id);
+      } else {
+        this.selectedObservacionIds.delete(observacion.id);
+      }
+    });
+  }
+
+  estaObservacionSeleccionada(observacion: ObservacionBien): boolean {
+    return this.selectedObservacionIds.has(observacion.id);
+  }
+
+  estanTodasObservacionesFiltradasSeleccionadas(): boolean {
+    return this.observacionesFiltradas.length > 0 &&
+      this.observacionesFiltradas.every(observacion => this.selectedObservacionIds.has(observacion.id));
+  }
+
+  hayObservacionesFiltradasSeleccionadas(): boolean {
+    return this.getObservacionesSeleccionadasFiltradas().length > 0;
+  }
+
+  getCantidadObservacionesParaPdf(): number {
+    const seleccionadas = this.getObservacionesSeleccionadasFiltradas().length;
+    return seleccionadas > 0 ? seleccionadas : this.observacionesFiltradas.length;
+  }
+
+  getObservacionesSeleccionadasFiltradas(): ObservacionBien[] {
+    return this.observacionesFiltradas.filter(observacion => this.selectedObservacionIds.has(observacion.id));
+  }
+
+  private getObservacionCategoriaId(observacion: ObservacionBien): number | null {
+    const bien = observacion.bien;
+    const categoriaId = bien?.ID_CATEGORIA || bien?.categoria?.id;
+
+    if (categoriaId) {
+      return Number(categoriaId);
+    }
+
+    const categoriaNombre = this.normalizarTexto(this.getObservacionCategoria(observacion));
+    return this.categorias.find(categoria =>
+      this.normalizarTexto(categoria.NOMBRE_CATEGORIA) === categoriaNombre
+    )?.id || null;
+  }
+
+  getCategoriaObservacionSeleccionadaNombre(): string {
+    if (!this.selectedCategoriaObservacionId) {
+      return 'Todas';
+    }
+
+    return this.categorias.find(categoria => categoria.id === this.selectedCategoriaObservacionId)?.NOMBRE_CATEGORIA || 'Todas';
   }
 
   private startOfDay(date: Date): Date {
