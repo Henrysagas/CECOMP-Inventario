@@ -28,6 +28,19 @@ textarea {
   max-width: 100%;
 }
 
+.inner-content h1,
+.inner-content h2,
+.inner-content h3,
+.inner-content h4,
+.inner-content h5,
+.inner-content h6,
+.inner-content .ant-tabs-tab-btn,
+.inner-content .ant-card-head-title,
+.inner-content .ant-descriptions-title,
+.inner-content .ant-steps-item-title {
+  text-transform: uppercase;
+}
+
 :root {
   --table-header-bg: #d32f2f;
   --table-header-color: #ffffff;
