@@ -84,7 +84,7 @@
               Perfil
             </a>
           </li>
-          <li nz-menu-item>
+          <li *ngIf="isLoggedIn" nz-menu-item>
             <a href="/Manual%20de%20usuario.pdf" target="_blank" rel="noopener" (click)="closeMobileMenu()">
               <span class="sidebar-menu-icon" nz-icon nzType="file-pdf" nzTheme="outline"></span>
               Manual de usuario
