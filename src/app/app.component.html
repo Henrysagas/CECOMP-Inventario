@@ -84,6 +84,12 @@
               Perfil
             </a>
           </li>
+          <li nz-menu-item>
+            <a href="/Manual%20de%20usuario.pdf" target="_blank" rel="noopener" (click)="closeMobileMenu()">
+              <span class="sidebar-menu-icon" nz-icon nzType="file-pdf" nzTheme="outline"></span>
+              Manual de usuario
+            </a>
+          </li>
           <li nz-menu-item (click)="gestionarSesion()" style="margin-top: auto;">
             <span class="sidebar-menu-icon" nz-icon [nzType]="isLoggedIn ? 'logout' : 'login'" nzTheme="outline"></span>
             {{ isLoggedIn ? 'Cerrar Sesión' : 'Iniciar Sesión' }}
