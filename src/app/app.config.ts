@@ -10,7 +10,8 @@ import { registerLocaleData, HashLocationStrategy, LocationStrategy } from '@ang
 import es from '@angular/common/locales/es';
 import { FormsModule } from '@angular/forms';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { provideHttpClient, withFetch } from '@angular/common/http';
+import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
+import { authInterceptor } from './auth.interceptor';
 
 registerLocaleData(es);
 
@@ -22,7 +23,10 @@ export const appConfig: ApplicationConfig = {
     provideNzI18n(es_ES),
     importProvidersFrom(FormsModule),
     provideAnimationsAsync(),
-    provideHttpClient(withFetch()),
+    provideHttpClient(
+      withFetch(),
+      withInterceptors([authInterceptor])
+    ),
     provideNzIcons(icons),
     { provide: LocationStrategy, useClass: HashLocationStrategy } // 👈 aquí lo agregas
   ]

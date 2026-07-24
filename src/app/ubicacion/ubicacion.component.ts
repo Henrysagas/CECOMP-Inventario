@@ -41,6 +41,7 @@ export class UbicacionesComponent implements OnInit {
   isAddingAmbiente = false;
   isAddingDireccion = false;
   isChangingName = false;
+  private vistaInicialCargada = false;
   changingNameType: 'direccion' | 'ubicacion' | 'ambiente' | null = null;
   changingNameValue = '';
   newUbicacion: Ubicacion = { ID_UBICACION: 0, NOMBRE: '', CODIGO: '', DIRECCION: 0 };
@@ -68,8 +69,29 @@ export class UbicacionesComponent implements OnInit {
 
   cargarDirecciones(): void {
     this.direccionesService.getDirecciones().subscribe(
-      (direcciones: DireccionModel[]) => this.direcciones = direcciones,
+      (direcciones: DireccionModel[]) => {
+        this.direcciones = direcciones;
+        if (!this.vistaInicialCargada) {
+          this.vistaInicialCargada = true;
+          this.mostrarCecompPorDefecto();
+        }
+      },
       error => console.error('Error al obtener direcciones:', error)
+    );
+  }
+
+  private mostrarCecompPorDefecto(): void {
+    this.ubicacionService.getUbicaciones().subscribe(
+      (ubicaciones: Ubicacion[]) => {
+        const cecomp = ubicaciones.find(ubicacion => this.normalizarNombre(ubicacion.NOMBRE) === 'cecomp');
+        if (!cecomp) {
+          return;
+        }
+
+        this.selectedDireccion = this.direcciones.find(direccion => direccion.id === cecomp.DIRECCION) ?? null;
+        this.verAmbientes(cecomp);
+      },
+      error => console.error('Error al buscar la ubicacion CECOMP:', error)
     );
   }
 
@@ -124,6 +146,17 @@ export class UbicacionesComponent implements OnInit {
   }
 
   guardarDireccion(): void {
+    const nombre = this.newDireccion.nombre.trim();
+    if (!nombre) {
+      this.message.warning('Ingrese el nombre de la direccion.');
+      return;
+    }
+    if (this.existeNombre(this.direcciones, item => item.nombre, nombre)) {
+      this.message.warning('Ya existe una direccion con ese nombre.');
+      return;
+    }
+    this.newDireccion.nombre = nombre;
+
     this.direccionesService.addDireccion(this.newDireccion).subscribe(
       () => {
         this.isAddingDireccion = false;
@@ -139,7 +172,18 @@ export class UbicacionesComponent implements OnInit {
       console.error('No hay una dirección seleccionada.');
       return;
     }
+
+    const nombre = this.newUbicacion.NOMBRE.trim();
+    if (!nombre) {
+      this.message.warning('Ingrese el nombre de la ubicacion.');
+      return;
+    }
+    if (this.existeNombre(this.ubicaciones, item => item.NOMBRE, nombre)) {
+      this.message.warning('Ya existe una ubicacion con ese nombre en esta direccion.');
+      return;
+    }
   
+    this.newUbicacion.NOMBRE = nombre;
     this.newUbicacion.DIRECCION = this.selectedDireccion.id;
   
     this.ubicacionService.addUbicacion(this.newUbicacion).subscribe(
@@ -159,7 +203,18 @@ export class UbicacionesComponent implements OnInit {
       console.error('No hay una ubicación seleccionada.');
       return;
     }
+
+    const nombre = this.newAmbiente.NOMBRE_AMBIENTE.trim();
+    if (!nombre) {
+      this.message.warning('Ingrese el nombre del ambiente.');
+      return;
+    }
+    if (this.existeNombre(this.ambientes, item => item.NOMBRE_AMBIENTE, nombre)) {
+      this.message.warning('Ya existe un ambiente con ese nombre en esta ubicacion.');
+      return;
+    }
   
+    this.newAmbiente.NOMBRE_AMBIENTE = nombre;
     this.newAmbiente.ID_UBICACION = this.selectedUbicacion.ID_UBICACION;
   
     this.ambienteService.addAmbiente(this.selectedUbicacion.ID_UBICACION, this.newAmbiente).subscribe(
@@ -261,8 +316,12 @@ export class UbicacionesComponent implements OnInit {
       return;
     }
 
-    if (nuevoNombre === direccion.nombre.trim()) {
+    if (this.normalizarNombre(nuevoNombre) === this.normalizarNombre(direccion.nombre)) {
       this.cancelarCambioNombre();
+      return;
+    }
+    if (this.existeNombre(this.direcciones, item => item.nombre, nuevoNombre, item => item.id === direccion.id)) {
+      this.message.warning('Ya existe una direccion con ese nombre.');
       return;
     }
 
@@ -287,8 +346,12 @@ export class UbicacionesComponent implements OnInit {
       return;
     }
 
-    if (nuevoNombre === ubicacion.NOMBRE.trim()) {
+    if (this.normalizarNombre(nuevoNombre) === this.normalizarNombre(ubicacion.NOMBRE)) {
       this.cancelarCambioNombre();
+      return;
+    }
+    if (this.existeNombre(this.ubicaciones, item => item.NOMBRE, nuevoNombre, item => item.ID_UBICACION === ubicacion.ID_UBICACION)) {
+      this.message.warning('Ya existe una ubicacion con ese nombre en esta direccion.');
       return;
     }
 
@@ -315,8 +378,12 @@ export class UbicacionesComponent implements OnInit {
       return;
     }
 
-    if (nuevoNombre === ambiente.NOMBRE_AMBIENTE.trim()) {
+    if (this.normalizarNombre(nuevoNombre) === this.normalizarNombre(ambiente.NOMBRE_AMBIENTE)) {
       this.cancelarCambioNombre();
+      return;
+    }
+    if (this.existeNombre(this.ambientes, item => item.NOMBRE_AMBIENTE, nuevoNombre, item => item.ID_AMBIENTE === ambiente.ID_AMBIENTE)) {
+      this.message.warning('Ya existe un ambiente con ese nombre en esta ubicacion.');
       return;
     }
 
@@ -400,9 +467,37 @@ export class UbicacionesComponent implements OnInit {
   }
 
   volverAUbicaciones(): void {
+    this.cancelar();
     this.selectedUbicacion = null;
+    this.selectedAmbiente = null;
     this.ambientes = [];
     this.selectedNivel = 'ubicacion';
+  }
+
+  volver(): void {
+    if (this.selectedNivel === 'ambiente' && this.selectedDireccion) {
+      this.cargarUbicaciones(this.selectedDireccion);
+      this.selectedUbicacion = null;
+      this.selectedAmbiente = null;
+      this.ambientes = [];
+      return;
+    }
+
+    this.volverADirecciones();
+  }
+
+  private normalizarNombre(nombre: string): string {
+    return nombre.trim().toLocaleLowerCase('es');
+  }
+
+  private existeNombre<T>(
+    items: T[],
+    obtenerNombre: (item: T) => string,
+    nombre: string,
+    excluir: (item: T) => boolean = () => false
+  ): boolean {
+    const nombreNormalizado = this.normalizarNombre(nombre);
+    return items.some(item => !excluir(item) && this.normalizarNombre(obtenerNombre(item)) === nombreNormalizado);
   }
 
   cancelar(): void {

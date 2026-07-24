@@ -93,6 +93,11 @@ export class AgregarBienComponent implements OnInit {
     this.ubicacionService.getUbicaciones().subscribe(
       (ubicaciones: Ubicacion[]) => {
         this.ubicaciones = ubicaciones;
+        const cecomp = ubicaciones.find(ubicacion => this.normalizarTexto(ubicacion.NOMBRE) === 'cecomp');
+        if (cecomp) {
+          this.selectedUbicacionId = cecomp.ID_UBICACION;
+          this.buscarAmbientes();
+        }
       },
       error => {
         console.error('Error al cargar ubicaciones:', error);
@@ -178,10 +183,18 @@ export class AgregarBienComponent implements OnInit {
       this.nuevoBien.ID_USUARIO = usuarioSinUsuario.id;
     }
 
-    this.selectedUbicacionId = null;
+    const cecomp = this.ubicaciones.find(ubicacion => this.normalizarTexto(ubicacion.NOMBRE) === 'cecomp');
+    this.selectedUbicacionId = cecomp?.ID_UBICACION ?? null;
     this.selectedAmbienteId = null;
     this.selectedEstado = null;
     this.showAmbienteSelect = false;
+    if (cecomp) {
+      this.buscarAmbientes();
+    }
+  }
+
+  private normalizarTexto(valor: string): string {
+    return valor.trim().toLocaleLowerCase('es');
   }
 
   cancelar(): void {

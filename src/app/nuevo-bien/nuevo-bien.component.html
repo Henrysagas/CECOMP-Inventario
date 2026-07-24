@@ -88,7 +88,7 @@
       <div class="form-group">
         <label for="ubicacion">Ubicaci&oacute;n</label>
         <select id="ubicacion" [(ngModel)]="selectedUbicacionId" name="ubicacion" (change)="onUbicacionChange($event)" required>
-          <option *ngFor="let ubicacion of ubicaciones" [value]="ubicacion.ID_UBICACION">{{ ubicacion.NOMBRE }}</option>
+          <option *ngFor="let ubicacion of ubicaciones" [ngValue]="ubicacion.ID_UBICACION">{{ ubicacion.NOMBRE }}</option>
         </select>
       </div>
 

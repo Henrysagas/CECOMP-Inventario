@@ -1,26 +1,14 @@
 <div class="container ambientes-page">
-  <h2>GESTION DE AMBIENTES</h2>
-
-  <div class="navigation-tabs">
-    <button [class.active]="selectedNivel === 'direccion'" (click)="volverADirecciones()">1. Direcciones</button>
-    <button
-      [class.active]="selectedNivel === 'ubicacion'"
-      [disabled]="!selectedDireccion"
-      (click)="selectedDireccion && cambiarNivel('ubicacion')">
-      2. Ubicaciones
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Inventario</p>
+      <h2>Gestion de ambientes</h2>
+      <p class="page-subtitle">Administra las ubicaciones y sus ambientes desde una sola vista.</p>
+    </div>
+    <button *ngIf="selectedNivel !== 'direccion'" type="button" class="btn-light unified-back" (click)="volver()">
+      Volver
     </button>
-    <button
-      [class.active]="selectedNivel === 'ambiente'"
-      [disabled]="!selectedUbicacion"
-      (click)="selectedUbicacion && cambiarNivel('ambiente')">
-      3. Ambientes
-    </button>
-  </div>
-
-  <div class="selection-summary">
-    <span><strong>Direccion:</strong> {{ selectedDireccion?.nombre || 'Seleccione una direccion' }}</span>
-    <span><strong>Ubicacion:</strong> {{ selectedUbicacion?.NOMBRE || 'Pendiente' }}</span>
-  </div>
+  </header>
 
   <section class="management-panel" *ngIf="selectedNivel === 'direccion' && !isAddingDireccion">
     <div class="panel-header">
@@ -28,24 +16,22 @@
         <h3>Direcciones</h3>
         <p>Elija una direccion para ver sus ubicaciones.</p>
       </div>
-      <button class="btn-add" (click)="mostrarAgregarDireccion()">Anadir Direccion</button>
+      <button class="btn-add" (click)="mostrarAgregarDireccion()">+ Nueva direccion</button>
     </div>
 
     <div class="item-list">
-      <button
-        class="item-card"
-        *ngFor="let direccion of direcciones"
-        [class.selected]="selectedDireccion?.id === direccion.id"
-        (click)="selectedDireccion = direccion">
+      <button class="item-card" *ngFor="let direccion of direcciones"
+        [class.selected]="selectedDireccion?.id === direccion.id" (click)="selectedDireccion = direccion">
         <span>{{ direccion.nombre }}</span>
-        <small>Click para seleccionar</small>
+        <small>Seleccionar direccion</small>
       </button>
     </div>
+    <p class="empty-state" *ngIf="direcciones.length === 0">Aun no hay direcciones registradas.</p>
 
     <div class="button-group">
-      <button [disabled]="!selectedDireccion" (click)="selectedDireccion && cargarUbicaciones(selectedDireccion)">Ver Ubicaciones</button>
-      <button [disabled]="!selectedDireccion" (click)="selectedDireccion && mostrarCambiarNombreDireccion(selectedDireccion)">Cambiar Nombre</button>
-      <button class="cancel" [disabled]="!selectedDireccion" (click)="selectedDireccion && eliminarDireccion(selectedDireccion.id)">Eliminar Direccion</button>
+      <button [disabled]="!selectedDireccion" (click)="selectedDireccion && cargarUbicaciones(selectedDireccion)">Ver ubicaciones</button>
+      <button [disabled]="!selectedDireccion" (click)="selectedDireccion && mostrarCambiarNombreDireccion(selectedDireccion)">Cambiar nombre</button>
+      <button class="cancel" [disabled]="!selectedDireccion" (click)="selectedDireccion && eliminarDireccion(selectedDireccion.id)">Eliminar direccion</button>
     </div>
 
     <div class="rename-panel" *ngIf="isChangingName && changingNameType === 'direccion'">
@@ -59,8 +45,9 @@
   </section>
 
   <section class="management-panel" *ngIf="selectedNivel === 'direccion' && isAddingDireccion">
-    <h3>Anadir Nueva Direccion</h3>
-    <input type="text" placeholder="Nombre de la direccion" [(ngModel)]="newDireccion.nombre" class="form-control">
+    <p class="eyebrow">Nuevo registro</p>
+    <h3>Anadir nueva direccion</h3>
+    <input type="text" placeholder="Nombre de la direccion" [(ngModel)]="newDireccion.nombre" class="form-control" (keyup.enter)="guardarDireccion()">
     <div class="button-group">
       <button (click)="guardarDireccion()">Guardar</button>
       <button class="cancel" (click)="cancelar()">Cancelar</button>
@@ -70,27 +57,27 @@
   <section class="management-panel" *ngIf="selectedNivel === 'ubicacion' && selectedDireccion && !isAddingUbicacion">
     <div class="panel-header">
       <div>
+        <p class="eyebrow">Direccion seleccionada</p>
         <h3>Ubicaciones de {{ selectedDireccion.nombre }}</h3>
         <p>Seleccione una ubicacion para revisar sus ambientes.</p>
       </div>
-      <button class="btn-add" (click)="mostrarAgregarUbicacion()">Anadir Ubicacion</button>
+      <button class="btn-add" (click)="mostrarAgregarUbicacion()">+ Nueva ubicacion</button>
     </div>
 
     <div class="item-list">
-      <button
-        class="item-card"
-        *ngFor="let ubicacion of ubicaciones"
+      <button class="item-card" *ngFor="let ubicacion of ubicaciones"
         [class.selected]="selectedUbicacion?.ID_UBICACION === ubicacion.ID_UBICACION"
         (click)="selectedUbicacion = ubicacion">
         <span>{{ ubicacion.NOMBRE }}</span>
-        <small>Codigo: {{ ubicacion.CODIGO || 'Sin codigo' }}</small>
+        <small>Seleccionar ubicacion</small>
       </button>
     </div>
+    <p class="empty-state" *ngIf="ubicaciones.length === 0">Esta direccion aun no tiene ubicaciones.</p>
 
     <div class="button-group">
-      <button [disabled]="!selectedUbicacion" (click)="selectedUbicacion && verAmbientes(selectedUbicacion)">Ver Ambientes</button>
-      <button [disabled]="!selectedUbicacion" (click)="selectedUbicacion && mostrarCambiarNombreUbicacion(selectedUbicacion)">Cambiar Nombre</button>
-      <button class="cancel" [disabled]="!selectedUbicacion" (click)="selectedUbicacion && eliminarUbicacion(selectedUbicacion.ID_UBICACION)">Eliminar Ubicacion</button>
+      <button [disabled]="!selectedUbicacion" (click)="selectedUbicacion && verAmbientes(selectedUbicacion)">Ver ambientes</button>
+      <button [disabled]="!selectedUbicacion" (click)="selectedUbicacion && mostrarCambiarNombreUbicacion(selectedUbicacion)">Cambiar nombre</button>
+      <button class="cancel" [disabled]="!selectedUbicacion" (click)="selectedUbicacion && eliminarUbicacion(selectedUbicacion.ID_UBICACION)">Eliminar ubicacion</button>
     </div>
 
     <div class="rename-panel" *ngIf="isChangingName && changingNameType === 'ubicacion'">
@@ -104,56 +91,74 @@
   </section>
 
   <section class="management-panel" *ngIf="selectedNivel === 'ubicacion' && isAddingUbicacion">
-    <h3>Anadir Nueva Ubicacion</h3>
-    <input type="text" placeholder="Nombre de la ubicacion" [(ngModel)]="newUbicacion.NOMBRE" class="form-control">
-    <input type="text" placeholder="Codigo de la ubicacion" [(ngModel)]="newUbicacion.CODIGO" class="form-control">
+    <p class="eyebrow">Nuevo registro</p>
+    <h3>Anadir nueva ubicacion</h3>
+    <input type="text" placeholder="Nombre de la ubicacion" [(ngModel)]="newUbicacion.NOMBRE" class="form-control" (keyup.enter)="guardarUbicacion()">
     <div class="button-group">
       <button (click)="guardarUbicacion()">Guardar</button>
       <button class="cancel" (click)="cancelar()">Cancelar</button>
     </div>
   </section>
 
-  <section class="management-panel" *ngIf="selectedNivel === 'ambiente' && selectedUbicacion && !isAddingAmbiente">
-    <div class="panel-header">
-      <div>
-        <h3>Ambientes de {{ selectedUbicacion.NOMBRE }}</h3>
-        <p>Administre los ambientes registrados para esta ubicacion.</p>
+  <div class="content-layout" *ngIf="selectedNivel === 'ambiente' && selectedUbicacion">
+    <section class="management-panel list-panel">
+      <div class="panel-header">
+        <div>
+          <p class="eyebrow">Ubicacion seleccionada</p>
+          <h3>{{ selectedUbicacion.NOMBRE }}</h3>
+          <p>{{ ambientes.length }} ambiente(s) registrado(s)</p>
+        </div>
+        <button class="btn-add" (click)="mostrarAgregarAmbiente()">+ Nuevo ambiente</button>
       </div>
-      <button class="btn-add" (click)="mostrarAgregarAmbiente()">Anadir Ambiente</button>
-    </div>
 
-    <div class="item-list">
-      <button
-        class="item-card"
-        *ngFor="let ambiente of ambientes"
-        [class.selected]="selectedAmbiente?.ID_AMBIENTE === ambiente.ID_AMBIENTE"
-        (click)="selectedAmbiente = ambiente">
-        <span>{{ ambiente.NOMBRE_AMBIENTE }}</span>
-        <small>ID: {{ ambiente.ID_AMBIENTE }}</small>
-      </button>
-    </div>
-
-    <div class="button-group">
-      <button [disabled]="!selectedAmbiente" (click)="selectedAmbiente && mostrarCambiarNombreAmbiente(selectedAmbiente)">Cambiar Nombre</button>
-      <button class="cancel" [disabled]="!selectedAmbiente" (click)="selectedAmbiente && eliminarAmbiente(selectedAmbiente.ID_AMBIENTE)">Eliminar Ambiente</button>
-    </div>
-
-    <div class="rename-panel" *ngIf="isChangingName && changingNameType === 'ambiente'">
-      <h4>Cambiar nombre de ambiente</h4>
-      <input type="text" placeholder="Nuevo nombre" [(ngModel)]="changingNameValue" class="form-control" (keyup.enter)="guardarCambioNombre()">
-      <div class="button-group">
-        <button (click)="guardarCambioNombre()">Guardar</button>
-        <button class="cancel" (click)="cancelarCambioNombre()">Cancelar</button>
+      <p class="empty-state" *ngIf="ambientes.length === 0">Esta ubicacion aun no tiene ambientes.</p>
+      <div class="environment-list">
+        <button class="environment-item" *ngFor="let ambiente of ambientes"
+          [class.active]="selectedAmbiente?.ID_AMBIENTE === ambiente.ID_AMBIENTE"
+          (click)="selectedAmbiente = ambiente; cancelarCambioNombre()">
+          <span>{{ ambiente.NOMBRE_AMBIENTE }}</span>
+          <small>ID {{ ambiente.ID_AMBIENTE }}</small>
+        </button>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section class="management-panel" *ngIf="selectedNivel === 'ambiente' && isAddingAmbiente">
-    <h3>Anadir Nuevo Ambiente</h3>
-    <input type="text" placeholder="Nombre del ambiente" [(ngModel)]="newAmbiente.NOMBRE_AMBIENTE" class="form-control">
-    <div class="button-group">
-      <button (click)="guardarAmbiente()">Guardar</button>
-      <button class="cancel" (click)="cancelar()">Cancelar</button>
-    </div>
-  </section>
+    <section class="management-panel detail-panel" *ngIf="!isAddingAmbiente">
+      <ng-container *ngIf="selectedAmbiente; else sinAmbiente">
+        <p class="eyebrow">Ambiente seleccionado</p>
+        <h3>{{ selectedAmbiente.NOMBRE_AMBIENTE }}</h3>
+        <p>Puede cambiar su nombre o eliminarlo si ya no se utiliza.</p>
+
+        <div class="button-group detail-actions" *ngIf="!isChangingName">
+          <button (click)="mostrarCambiarNombreAmbiente(selectedAmbiente)">Cambiar nombre</button>
+          <button class="cancel" (click)="eliminarAmbiente(selectedAmbiente.ID_AMBIENTE)">Eliminar ambiente</button>
+        </div>
+
+        <div class="rename-panel" *ngIf="isChangingName && changingNameType === 'ambiente'">
+          <h4>Cambiar nombre de ambiente</h4>
+          <input type="text" placeholder="Nuevo nombre" [(ngModel)]="changingNameValue" class="form-control" (keyup.enter)="guardarCambioNombre()">
+          <div class="button-group">
+            <button (click)="guardarCambioNombre()">Guardar</button>
+            <button class="cancel" (click)="cancelarCambioNombre()">Cancelar</button>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #sinAmbiente>
+        <div class="empty-detail">
+          <h3>Seleccione un ambiente</h3>
+          <p>Elija un ambiente de la lista para ver las acciones disponibles.</p>
+        </div>
+      </ng-template>
+    </section>
+
+    <section class="management-panel detail-panel" *ngIf="isAddingAmbiente">
+      <p class="eyebrow">Nuevo registro</p>
+      <h3>Anadir nuevo ambiente</h3>
+      <input type="text" placeholder="Nombre del ambiente" [(ngModel)]="newAmbiente.NOMBRE_AMBIENTE" class="form-control" (keyup.enter)="guardarAmbiente()">
+      <div class="button-group detail-actions">
+        <button (click)="guardarAmbiente()">Guardar</button>
+        <button class="cancel" (click)="cancelar()">Cancelar</button>
+      </div>
+    </section>
+  </div>
 </div>
